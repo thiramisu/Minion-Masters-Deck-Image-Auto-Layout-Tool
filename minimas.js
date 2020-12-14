@@ -27,6 +27,16 @@ window.addEventListener("load", () => {
         3, 114, 28, // mana
         30, 164, -90 //grid
       ]
+    },
+    {
+      size: [384, 216],
+      positions: [
+        12, 52, 12, 134, // cards
+        218, 1, 48, // master
+        273, 4, 43, // WC
+        322, 2, 46, // mana
+        14, 47 //grid
+      ]
     }
   ];
 
@@ -131,7 +141,7 @@ window.addEventListener("load", () => {
 
     static #loadResolutionRatio(e) {
       if (ImageLoader.#imageElement.naturalWidth / 16 * 9 !== ImageLoader.#imageElement.naturalHeight) {
-        Warning.log("厳密な16:9でないため、表示が崩れる可能性があります");
+        Warning.log("アスペクト比が厳密な16:9でないため、表示が崩れる可能性があります。 / Because the aspect ratio is not exactly 16:9, There is a possibility that the layout is broken.");
       }
       ImageLoader.#resolutionRatio = ImageLoader.#imageElement.naturalWidth * 10 / 128;
     }
