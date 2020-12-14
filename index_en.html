@@ -8,9 +8,10 @@
 	<meta property="og:title" content="Minion Masters Deck Image Auto Layout Tool for Twitter" />
 	<meta property="og:type" content="website" />
 	<meta property="og:url" content="https://thiramisu.github.io/Minion-Masters-Deck-Image-Auto-Layout-Tool/index_en.html" />
-	<meta property="og:image" content="https://thiramisu.github.io/Minion-Masters-Deck-Image-Auto-Layout-Tool/thumbnail.jpg" />
-	<meta property="og:description" content="Relayouting Tool of Minion Masters' Deck Image to visualize cooler and easier on Twitter / Twitterにミニマスのデッキを簡単にかっこよく載っけるためのツール"/>
-	<title>ミニマスデッキ画像自動レイアウトツール / Minion Masters Deck Image Auto Layout Tool</title>
+	<meta property="og:image"
+		content="https://thiramisu.github.io/Minion-Masters-Deck-Image-Auto-Layout-Tool/thumbnail.jpg" />
+	<meta property="og:description" content="Relayouting Tool of Minion Masters' Deck Image to visualize cooler and easier on Twitter" />
+	<title>Minion Masters Deck Image Auto Layout Tool</title>
 	<script src="minimas.js"></script>
 	<style>
 		body {
@@ -54,21 +55,20 @@
 		.center {
 			text-align: center;
 		}
+
+		.warning {
+			color: #e11;
+		}
 	</style>
 </head>
 
 <body>
 	<div class="label">※Chrome以外で動くか分かりません / Chrome Recommended</div>
-	<label class="label"><span class="title">解像度 / Resolution</span>
-		<select id="resolution" class="select">
-			<option value="100">1280x720</option>
-			<option value="150">1920x1080</option>
-		</select>
-	</label>
 	<label class="label"><span class="title">レイアウトタイプ / Layout Type</span>
 		<select id="layout" class="select">
-			<option value="0">type 1</option>
-			<option value="1">type 2</option>
+			<option value="0">type 0</option>
+			<option value="1">type 1</option>
+			<option value="2">type 2</option>
 		</select>
 	</label>
 	<label class="label">
@@ -78,6 +78,7 @@
 	</label>
 	<div class="label">結果 / Result<br />
 		(右クリックから保存できます / Right-click to save to local)<br />
+		<div id="warning" class="warning"></div>
 		<canvas id="canvas" class="canvas" width="360" height="195"></canvas>
 	</div>
 	<div class="label">元画像 / Original Image<br />
@@ -86,7 +87,8 @@
 	<div class="label">例 / Example<br />
 		<img src="example.jpg">
 	</div>
-	<footer class="center">created by <a href="https://twitter.com/tiramisu_oTATo" class="link">@tiramisu_oTATo</a> (unofficial)</footer>
+	<footer class="center">created by <a href="https://twitter.com/tiramisu_oTATo" class="link">@tiramisu_oTATo</a>
+		(unofficial)</footer>
 </body>
 
 </html>
