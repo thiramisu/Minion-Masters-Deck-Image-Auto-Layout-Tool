@@ -32,10 +32,10 @@ window.addEventListener("load", () => {
       size: [384, 216],
       positions: [
         12, 52, 12, 134, // cards
-        218, 1, 48, // master
-        273, 4, 43, // WC
-        322, 2, 46, // mana
-        14, 47 //grid
+        220, 3, 44, // master
+        276, 6, 39, // WC
+        325, 4, 42, // mana
+        11, 47 //grid
       ]
     }
   ];
