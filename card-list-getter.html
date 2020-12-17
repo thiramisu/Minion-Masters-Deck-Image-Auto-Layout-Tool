@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="ja" xml:lang="ja" xmlns:og="http://ogp.me/ns#">
+
+<head>
+	<meta charset="utf-8">
+	<title>ミニマスカードID取得ツール</title>
+	<link rel="stylesheet" href="minimas.css" />
+	<link rel="icon" type="image/png" href="icon.png" />
+	<script src="card-list-getter.js" defer></script>
+</head>
+
+<body>
+	<label class="label">
+		カードID(/cidを改行区切り、マスターはそのまま、最初と最後は改行しない)<br />
+		<textarea id="cid" class="textarea">3 263 54 49 70 26 214 290 188 57 10</textarea>
+	</label>
+	<label class="label">
+		カードの名前(/cdを改行区切り、マスターはそのまま、最初と最後は改行しない)<br />
+		<textarea id="cd" class="textarea">Ravager: Arcane Ring, Blood Imps, Disruptor Puff, Heal Puff, Mana Puff, Squire Puff, Sugilite Shield, Arcane Bolt, Black Hole, Boomer</textarea>
+	</label>
+	<label class="label">
+		結果 (<span id="card-count">0</span> 枚)<br />
+		<textarea id="output" class="textarea" readonly></textarea>
+	</label>
+	<footer class="center">created by <a href="https://twitter.com/tiramisu_oTATo" class="link">@tiramisu_oTATo</a>
+		(unofficial)</footer>
+</body>
+
+</html>
