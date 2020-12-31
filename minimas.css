@@ -427,7 +427,7 @@ input:checked+.button::after {
 }
 
 .detail-table {
-  max-width: max-content;
+  min-width: max-content;
   border-collapse: collapse;
   margin-bottom: 32px;
 }
@@ -440,6 +440,40 @@ input:checked+.button::after {
 
 .detail-table--thead>tr>th:first-child {
   border-left: none;
+}
+
+.sortable-th {
+  cursor: pointer;
+  position: relative;
+}
+
+.sortable-th::before,
+.sortable-th::after {
+  border: none 2px #eee;
+  border-top-style: solid;
+  border-right-style: solid;
+  content: "";
+  height: 7px;
+  opacity: 0.3;
+  position: absolute;
+  right: 4px;
+  transition: opacity var(--transition-duration) var(--transition-curve);
+  width: 7px;
+}
+
+.sortable-th:hover:before,
+.sortable-th:hover:after {
+  opacity: 0.9;
+}
+
+.sortable-th::before {
+  bottom: 5px;
+  transform: scaleX(0.5) rotate(135deg);
+}
+
+.sortable-th::after {
+  top: 5px;
+  transform: scaleX(0.5) rotate(-45deg);
 }
 
 .detail-table--tbody>tr>td {
@@ -460,7 +494,7 @@ input:checked+.button::after {
 }
 
 .all-table--tbody {
-  border-top: solid 1px rgb(0, 0, 0, 0.5);
+  border-top: solid 1px rgb(255, 255, 0, 0.2);
   text-align: center;
 }
 
@@ -476,15 +510,25 @@ input:checked+.button::after {
 .solo-battle>tr:first-child>td:nth-last-child(2),
 .solo-battle>tr:first-child>td:nth-last-child(3),
 .win>tr:first-child>td:nth-child(4) {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.05);
 }
 
-.team-battle>tr:first-child {
+.you>td:nth-last-child(1),
+.you>td:nth-last-child(2),
+.you>td:nth-last-child(3),
+.win>.you>td:nth-last-child(4) {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+
+.team-battle>tr:first-child>td:nth-last-child(1),
+.team-battle>tr:first-child>td:nth-last-child(2),
+.team-battle>tr:first-child>td:nth-last-child(3) {
   border-bottom: solid 1px rgb(0, 0, 0);
 }
 
 .team-battle>tr:nth-child(3) {
-  border-bottom: solid 1px rgba(255, 255, 255, 0.4);
+  border-bottom: solid 1px rgba(255, 255, 255, 0.2);
 }
 /*
 .lose-team-battle>tr:first-child>td:nth-last-child(1), .lose-team-battle>tr:first-child>td:nth-last-child(2), .lose-team-battle>tr:nth-child(2), .win-team-battle>tr:nth-child(3), .win-team-battle>tr:nth-child(4), .lose-solo-battle>tr:first-child>td:nth-last-child(1), .lose-solo-battle>tr:first-child>td:nth-last-child(2) {
@@ -504,4 +548,74 @@ input:checked+.button::after {
 
 .spacer0 {
   visibility: hidden;
+}
+
+.result {
+  display: none;
+  transition: all 0.8s var(--transition-curve);
+}
+
+.loading {
+  display: initial;
+  opacity: 0;
+}
+
+.ready {
+  display: initial;
+  opacity: 1;
+}
+
+.loading-screen {
+  position: absolute;
+  transition: opacity 0.8s var(--transition-curve);
+}
+
+.ready>.loading-screen {
+  opacity: 0;
+}
+
+.invalid {
+  background-color: rgba(255, 0, 0, 0.5) !important;
+}
+
+.reload {
+  bottom: 4px;
+  height: 80px;
+  padding: 0;
+  position: absolute;
+  right: 4px;
+  width: 80px;
+}
+
+.reload-image::before,
+.reload-image::after {
+  content: "";
+  position: absolute;
+}
+
+.reload-image::before {
+  border: solid 6px #eee;
+  border-radius: 50%;
+  left: 10px;
+  height: 48px;
+  top: 10px;
+  width: 48px;
+}
+
+.reload-image::after {
+  border: solid 4px transparent;
+  border-right-color: #eee;
+  border-top-color: #eee;
+  border-radius: 4px;
+  left: 12px;
+  height: 10px;
+  top: 12px;
+  width: 10px;
+  transform: rotate(45deg);
+  transform-origin: 28px 28px;
+}
+
+.reload-image:hover::after {
+  transition: transform var(--transition-duration) var(--transition-curve);
+  transform: rotate(405deg);
 }

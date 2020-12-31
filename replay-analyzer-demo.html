@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="ja" xml:lang="ja" xmlns:og="http://ogp.me/ns#">
+
+<head>
+  <meta charset="utf-8">
+  <title>Minion Masters リプレイ分析ツール</title>
+  <link rel="stylesheet" href="minimas.css" />
+  <link rel="icon" type="image/png" href="icon.png" />
+</head>
+
+<body>
+  <div>WIP / ※画面は開発中のものです<div class=""></div> / The site is under development. / 製作中</div>
+  <div class="label summary-box">
+    <div class="summary--child">試合数
+      <div class="match-count">123</div>
+    </div>
+    <div class="summary--child">勝率 - 100勝100敗
+      <div class="win-rate">45<span class="win-rate--super">.6</span><span class="win-rate--percent">%</span>
+      </div>
+    </div>
+    <table class="summary--child">
+      <tr>
+        <th class="summary--th">1v1</th>
+        <td class="win-rate win-rate--small summary--td">0<span class="win-rate--span"><span
+              class="win-rate--super">.0</span><span class="win-rate--percent">%</span></span>
+        </td>
+        <td class="summary--td">0勝100敗</td>
+      <tr>
+        <th class="summary--th">野良</th>
+        <td class="win-rate win-rate--small summary--td">100<span class="win-rate--span"><span
+              class="win-rate--super">.0</span><span class="win-rate--percent">%</span></span>
+        </td>
+        <td class="summary--td">100勝0敗</td>
+      <tr>
+        <th class="summary--th">ﾌﾟﾘﾒ</th>
+        <td class="win-rate win-rate--small summary--td">--- <span class="win-rate--span"><span
+              class="win-rate--super">.-</span><span class="win-rate--percent">%</span></span>
+        </td>
+        <td class="summary--td">該当なし</td>
+    </table>
+    <table class="summary--child">
+      <tr>
+        <th class="summary--th">Stormbringer</th>
+        <td class="win-rate win-rate--small summary--td">20<span class="win-rate--span"><span
+              class="win-rate--super">.0</span><span class="win-rate--percent">%</span></span>
+        </td>
+        <td class="summary--td">1勝4敗</td>
+      <tr>
+        <th class="summary--th">Milloween</th>
+        <td class="win-rate win-rate--small summary--td">100<span class="win-rate--span"><span
+              class="win-rate--super">.0</span><span class="win-rate--percent">%</span></span>
+        </td>
+        <td class="summary--td">17勝0敗</td>
+    </table>
+    <!--div class="summary--child">使用中デッキ
+      <div>a / b / c / d / e / f / g</div>
+    </div-->
+  </div>
+  <div class="flex-row">
+    <select id="graph-selector" class="input">
+      <option class="graph-selector--option">自分のマスター
+        <!--マスター名,試合数,勝率-->
+      </option>
+      <option class="graph-selector--option" selected>自分のデッキ
+        <!--マスター,デッキ,試合数,勝率-->
+      </option>
+      <option class="graph-selector--option">自分のカード
+        <!--カード名,試合数,勝率-->
+      </option>
+      <option class="graph-selector--option">自分以外の使用マスター
+        <!--マスター名,延べ試合数-->
+      </option>
+      <option class="graph-selector--option">自分以外の使用カード
+        <!--カード名,延べ枚数-->
+      </option>
+      <option class="graph-selector--option">試合時間
+        <!--最短,最長,時間ごとの勝率-->
+      </option>
+      <option class="graph-selector--option">ゲームモード
+        <!--ゲームモード名,試合数,勝率-->
+      </option>
+    </select>
+    <button class="button add-summary">ヘ</button>
+    <button class="button remove-summary">-</button>
+  </div>
+  <div id="graph" class="graph master">
+    <div id="template--graph-fragment" class="graph-fragment" hidden></div>
+    <div class="graph-fragment" data-master="Stormbringer"></div>
+    <div class="graph-fragment" data-master="Ratbo"></div>
+    <div class="graph-fragment" data-master="Milloween"></div>
+    <div class="graph-tooltip" style="bottom: 30px; left: 42px;">
+      <div>敗北 / 12:34</div>
+      <div>Stormbringer</div>
+      <div>Hoge / Fuga / Piyo / Hige / Hage / Mofu</div>
+      <div>2020/01/01 00:00</div>
+    </div>
+  </div>
+  <table class="detail-table">
+    <thead class="detail-table--thead">
+      <tr>
+        <th>マスター</th>
+        <th>デッキ</th>
+        <th>試合数
+          <!--times-->
+        </th>
+        <th>勝率</th>
+        <th>勝</th>
+        <th>敗</th>
+      </tr>
+    <tbody class="detail-table--tbody deck-table--tbody stripe-tbody">
+      <tr>
+        <td>Stormbringer</td>
+        <td>Hoge / Fuga / Piyo / Hige / Hage / Mofu</td>
+        <td>5</td>
+        <td>20.0%</td>
+        <td>1</td>
+        <td>4</td>
+      </tr>
+      <tr>
+        <td>Milloween</td>
+        <td>Hoge / Fuga / Piyo / Hige / Hage / Mofu</td>
+        <td>17</td>
+        <td>100.0%</td>
+        <td>17</td>
+        <td>0</td>
+      </tr>
+  </table>
+  <div class="label">
+    <table class="filter--table">
+      <tr>
+        <th class="filter--th">あなたの名前</th>
+        <td class="filter--td">
+          <div class="fieldset">
+            <input id="filter-your-name" list="player-names" class="input" />
+            <label><input type="radio" name="filter-you" checked hidden><span
+                class="radio-label button">を含む</span></label>
+            <label><input type="radio" name="filter-you" hidden><span class="radio-label button">以外</span></label>
+            <label><input type="radio" name="filter-you" hidden><span class="radio-label button">気にしない</span></label>
+          </div>
+        </td>
+      <tr>
+        <th class="filter--th">ゲームモード</th>
+        <td class="filter--td">
+          <div class="fieldset">
+            <label><input type="checkbox" name="filter-game-mode" hidden checked><span
+                class="checkbox-label button">1v1</span></label>
+            <label><input type="checkbox" name="filter-game-mode" hidden checked><span
+                class="checkbox-label button">野良</span></label>
+            <label><input type="checkbox" name="filter-game-mode" hidden checked><span
+                class="checkbox-label button">プリメイド</span></label>
+            <label><input type="checkbox" name="filter-game-mode" hidden><span
+                class="checkbox-label button">NPC</span></label>
+          </div>
+        </td>
+      <tr>
+        <th class="filter--th">他プレイヤー<br /><button id="filter-player-reset" class="button reset">リセット</button></th>
+        <td class="filter--td">
+          <div class="fieldset">
+            <button class="button remove">-</button>
+            <input id="filter-player-name" list="player-names" class="input" />
+            <label><input type="radio" name="filter-player" checked hidden><span
+                class="radio-label button">を含む</span></label>
+            <label><input type="radio" name="filter-player" hidden><span class="radio-label button">以外</span></label>
+          </div>
+          <button id="filter-player-add" class="button add">+</button>
+        </td>
+      <tr>
+        <th class="filter--th">マスター<br /><button id="filter-master-reset" class="button reset">リセット</button></th>
+        <td class="filter--td">
+          <div class="fieldset">
+            <button class="button remove">-</button>
+            <label><input type="checkbox" name="filter-master-player" hidden checked><span
+                class="checkbox-label button">自分</span></label>
+            <label><input type="checkbox" name="filter-master-player" hidden><span
+                class="checkbox-label button">相方</span></label>
+            <label><input type="checkbox" name="filter-master-player" hidden><span
+                class="checkbox-label button">敵</span></label>
+            <input id="filter-card-name" list="master-names" class="input" value="Stormbringer" />
+            <label><input type="radio" name="filter-master" checked hidden><span
+                class="radio-label button">を含む</span></label>
+            <label><input type="radio" name="filter-master" hidden><span class="radio-label button">以外</span></label>
+          </div>
+          <button id="filter-master-add" class="button add">+</button>
+        </td>
+      <tr>
+        <th class="filter--th">カード<br /><button id="filter-card-reset" class="button reset">リセット</button></th>
+        <td class="filter--td">
+          <div class="fieldset">
+            <button class="button remove">-</button>
+            <label><input type="checkbox" name="filter-card-player" hidden><span
+                class="checkbox-label button">自分</span></label>
+            <label><input type="checkbox" name="filter-card-player" hidden><span
+                class="checkbox-label button">相方</span></label>
+            <label><input type="checkbox" name="filter-card-player" hidden><span
+                class="checkbox-label button">敵</span></label>
+            <input id="filter-card-name" list="card-names" class="input" />
+            <label><input type="radio" name="filter-card" checked hidden><span
+                class="radio-label button">を含む</span></label>
+            <label><input type="radio" name="filter-card" hidden><span class="radio-label button">以外</span></label>
+          </div>
+          <button id="filter-card-add" class="button add">+</button>
+        </td>
+      <tr>
+        <th class="filter--th">試合時間</th>
+        <td class="filter--td">
+          <input type="number" id="filter-gt-mins" step="1" min="0" max="99" value="0" class="number2" />
+          <span class="spacing1">:</span>
+          <input type="number" id="filter-gt-secs" min="0" max="59" value="0" class="number2" />
+          <span class="spacing2">～</span>
+          <input type="number" id="filter-lt-mins" min="0" max="99" value="99" class="number2" />
+          <span class="spacing1">:</span>
+          <input type="number" id="filter-lt-secs" min="0" max="59" value="59" class="number2" />
+        </td>
+      <tr>
+        <th class="filter--th">決着日時</th>
+        <td class="filter--td">
+          <input type="date" id="filter-begin-date" class="date calendar-picker" />
+          <input type="time" id="filter-begin-time" class="time calendar-picker" />
+          <span class="spacing2">～</span>
+          <input type="date" id="filter-end-date" class="date calendar-picker" />
+          <input type="time" id="filter-end-time" class="time calendar-picker" />
+        </td>
+    </table>
+  </div>
+  <template id="filter-option">
+    <div class="fieldset">
+      <button class="button remove">-</button>
+      <input id="filter-player-name" list="player-names" class="input" />
+      <label><input type="radio" name="filter-player" checked><span class="tag">を含む</span></label>
+      <label><input type="radio" name="filter-player"><span class="tag">以外</span></label>
+    </div>
+  </template>
+  <div>
+    <!--自分を一行目、味方を2行目に-->
+    <table id="replay-list" class="detail-table">
+      <thead class="detail-table--thead">
+        <tr>
+          <th class="sortable-th">日時</th>
+          <th class="sortable-th">試合時間</th>
+          <th class="sortable-th">モード</th>
+          <th class="sortable-th">勝敗</th>
+          <th>プレイヤー</th>
+          <th>マスター</th>
+          <th>デッキ</th>
+        </tr>
+      </thead>
+      <tbody class="detail-table--tbody all-table--tbody team-battle win">
+        <tr>
+          <td rowspan="4">2023/01/01 00:00</td>
+          <td rowspan="4"><span class="spacer0">0</span>0:00</td>
+          <td rowspan="4">野良</td>
+          <td rowspan="4">勝ち</td>
+          <td>tiramisu_oTATo</td>
+          <td>Stormbringer</td>
+          <td>Hoge / Fuga / Piyo / Hige / Hage / Mofu</td>
+        </tr>
+        <tr>
+          <td>you</td>
+          <td>Settsu</td>
+          <td>Hoge / Fuga / Piyo / Hige / Hage / Mofu</td>
+        </tr>
+        <tr>
+          <td>henohenomoheji</td>
+          <td>Morellia</td>
+          <td>"Armored" Scrat / Beam of Doom / Cleaver / Defenso Chopper / Empowered Soul Stealer / Fergus Flagon
+            Fighter</td>
+        </tr>
+        <tr>
+          <td>henoheno2</td>
+          <td>Morellia</td>
+          <td>HogeHoge / FugaFuga / PiyoPiyo / HigeHige / HageHage / MofuMofu</td>
+        </tr>
+      <tbody class="detail-table--tbody all-table--tbody team-battle lose">
+        <tr>
+          <td rowspan="4">2022/01/01 00:00</td>
+          <td rowspan="4">12:34</td>
+          <td rowspan="4">プリメイド</td>
+          <td rowspan="4">負け</td>
+          <td>tiramisu_oTATo</td>
+          <td>Stormbringer</td>
+          <td>Hoge / Fuga / Piyo / Hige / Hage / Mofu</td>
+        </tr>
+        <tr>
+          <td>you2</td>
+          <td>Mordar</td>
+          <td>Hoge / Fuga / Piyo / Hige / Hage / Mofu</td>
+        </tr>
+        <tr>
+          <td>henohenomoheji</td>
+          <td>Morellia</td>
+          <td>"Armored" Scrat / Beam of Doom / Cleaver / Defenso Chopper / Empowered Soul Stealer / Fergus Flagon
+            Fighter</td>
+        </tr>
+        <tr>
+          <td>henoheno2</td>
+          <td>Stormbringer</td>
+          <td>HogeHoge / FugaFuga / PiyoPiyo / HigeHige / HageHage / MofuMofu</td>
+        </tr>
+      </tbody>
+      <tbody class="detail-table--tbody all-table--tbody solo-battle win">
+        <tr>
+          <td rowspan="2">2021/01/01 00:00</td>
+          <td rowspan="2">12:34</td>
+          <td rowspan="2">1v1</td>
+          <td rowspan="2">勝ち</td>
+          <td>tiramisu_oTATo</td>
+          <td>Stormbringer</td>
+          <td>Hoge / Fuga / Piyo / Hige / Hage / Mofu</td>
+        </tr>
+        <tr>
+          <td>henoheno2</td>
+          <td>Ratbo</td>
+          <td>HogeHoge / FugaFuga / PiyoPiyo / HigeHige / HageHage / MofuMofu</td>
+        </tr>
+        </tr>
+      </tbody>
+      <tbody class="detail-table--tbody all-table--tbody solo-battle lose">
+        <tr>
+          <td rowspan="2">2020/01/01 00:00</td>
+          <td rowspan="2">12:34</td>
+          <td rowspan="2">1v1</td>
+          <td rowspan="2">負け</td>
+          <td>tiramisu_oTATo</td>
+          <td>Stormbringer</td>
+          <td>Hoge / Fuga / Piyo / Hige / Hage / Mofu</td>
+        </tr>
+        <tr>
+          <td>henoheno2</td>
+          <td>Settsu</td>
+          <td>HogeHoge / FugaFuga / PiyoPiyo / HigeHige / HageHage / MofuMofu</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="label">
+    <table class="filter--table">
+      <tr>
+        <th class="filter--th">Local Replay<br />Folder</th>
+        <td class="filter--td"> 警告が出ると思われますが、<br />このツールは一度ページを読み込めばオフラインでも動作するので、<br />サーバーにアップロード・保存はされません<br />
+          <input type="file" id="replay-directory" multiple webkitdirectory />
+        </td>
+      <tr>
+        <th class="filter--th">追加カード<br />(あれば)</th>
+        <td class="filter--td">
+          テキスト (<a href="card-list-getter.html" class="link">Tool</a>)
+          <textarea id="additional-card-text" class="textarea"></textarea>
+          または、選択フォルダ内にreplay-analyzer.jsonがあれば自動読み込みします
+        </td>
+    </table>
+  </div>
+  <div class="label">
+    仕様について
+    <ul>
+      <li>複数選択で何も選択しない場合は、全て選択している場合と同じ動作になります。</li>
+      <li>試合のプレイヤーは自分>相方>敵の順に並び替えられます。</li>
+    </ul>
+
+  </div>
+  <footer class="center">created by <a href="https://twitter.com/tiramisu_oTATo" class="link">@tiramisu_oTATo</a>
+    (unofficial)</footer>
+  <datalist id="player-names">
+    <option value="Chocolate">
+    <option value="Coconut">
+    <option value="Mint">
+    <option value="Strawberry">
+    <option value="Vanilla">
+  </datalist>
+  <datalist id="master-names">
+    <option value="Stormbringer">
+    <option value="Ratbo">
+    <option value="Milloween">
+    <option value="Morellia">
+    <option value="King Puff">
+  </datalist>
+  <datalist id="card-names">
+    <option value="Cleaver">
+    <option value="Canon Roller">
+    <option value="Warrior">
+    <option value="Swarmers">
+    <option value="Scrat Pack">
+  </datalist>
+</body>
+
+</html>
