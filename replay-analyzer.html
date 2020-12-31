@@ -46,13 +46,6 @@
         <td class="filter--td"> 警告が出ると思われますが、<br />このツールは一度ページを読み込めばオフラインでも動作するので、<br />サーバーにアップロード・保存はされません<br />
           <input type="file" id="replay-directory" multiple webkitdirectory />
         </td>
-      <tr>
-        <th class="filter--th">追加カード<br />(あれば)</th>
-        <td class="filter--td">
-          テキスト (<a href="card-list-getter.html" class="link">Tool</a>)
-          <textarea id="additional-card-text" class="textarea"></textarea>
-          または、選択フォルダ内にreplay-analyzer.jsonがあれば自動読み込みします
-        </td>
     </table>
   </div>
   <div class="label">
@@ -61,7 +54,12 @@
       <li>複数選択で何も選択しない場合は、全て選択している場合と同じ動作になります。</li>
       <li>試合のプレイヤーは自分>相方>敵の順に並び替えられます。</li>
     </ul>
-
+  </div>
+  <div class="label">
+    バグなど
+    <ul>
+      <li>ゲームモード「野良」判定が多分できてません</li>
+    </ul>
   </div>
   <footer class="center">created by <a href="https://twitter.com/tiramisu_oTATo" class="link">@tiramisu_oTATo</a>
     (unofficial)</footer>

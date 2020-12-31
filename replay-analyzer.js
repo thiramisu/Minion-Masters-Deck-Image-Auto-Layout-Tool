@@ -409,6 +409,9 @@ window.addEventListener("load", () => {
     static #sortFunc(replay, b) {
       for (const [propertyName, isAscend] of UIManager.sortPriorities) {
         if (propertyName === "winTeamId") {
+          if (replay.you.exist !== b.you.exist) {
+            return (b.you.exist ^ isAscend) * 2 - 1;
+          }
           if (replay.you.areTheWinner === b.you.areTheWinner)
             continue;
           return ((replay.you.areTheWinner < b.you.areTheWinner) ^ isAscend) * 2 - 1;
@@ -499,7 +502,7 @@ window.addEventListener("load", () => {
       }).format(replay.date)}</td>
             <td rowspan="4">${durationString.length <= 4 ? '<span class="spacer0">0</span>' : ""}${durationString}</td>
             <td rowspan="4">${GameModeName.get(replay.gameMode)}</td>
-            <td rowspan="4">${isWinner ? "勝ち" : "負け"}</td>
+            <td rowspan="4">${(you === undefined) ? "" : isWinner ? "勝ち" : "負け"}</td>
             <td${players[0]?.name ? "" : ' class="invalid"'}>${players[0]?.name}</td>
             <td>${MasterName.get(players[0]?.masterId)}</td>
             <td>${getDeckString(players[0]?.deck) ?? "エラーなし"}</td>
