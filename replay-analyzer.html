@@ -12,18 +12,56 @@
 <body>
   <div id="result" class="result">
     <div class="loading-screen">ロード中</div>
-    <div class="label">
+    <form name="filter" class="label">
       <table class="filter--table">
         <tr>
           <th class="filter--th">あなたの名前</th>
           <td class="filter--td">
             <div class="fieldset">
-              <input id="filter-your-name" list="player-names" class="input" />            </div>
+              <input name="yourName" list="player-names" class="input" />
+              <label><input type="radio" name="you" value="include" checked hidden><span
+                  class="radio-label button">を含む</span></label>
+              <label><input type="radio" name="you" value="exclude" hidden><span class="radio-label button">以外</span></label>
+              <label><input type="radio" name="you" value="any" hidden><span class="radio-label button">気にしない</span></label>
+            </div>
+          </td>
+        <tr>
+          <th class="filter--th">ゲームモード</th>
+          <td class="filter--td">
+            <div class="fieldset">
+              <label><input type="checkbox" name="gameMode1v1" hidden><span
+                  class="checkbox-label button">1v1</span></label>
+              <label><input type="checkbox" name="gameMode2v2" hidden><span
+                  class="checkbox-label button">野良</span></label>
+              <label><input type="checkbox" name="gameModePremade" hidden><span
+                  class="checkbox-label button">プリメイド</span></label>
+              <label hidden><input type="checkbox" name="gameModeNPC" hidden checked><span
+                  class="checkbox-label button">NPC</span></label>
+            </div>
+          </td>
+        <tr>
+          <th class="filter--th">試合時間</th>
+          <td class="filter--td">
+            <input type="number" name="gtMins" step="1" min="0" max="99" value="0" data-default-value="0" class="number2" />
+            <span class="spacing1">:</span>
+            <input type="number" name="gtSecs" min="0" max="59" value="0" class="number2" />
+            <span class="spacing2">～</span>
+            <input type="number" name="ltMins" min="0" max="99" value="99" class="number2" />
+            <span class="spacing1">:</span>
+            <input type="number" name="ltSecs" min="0" max="59" value="59" class="number2" />
+          </td>
+        <tr>
+          <th class="filter--th">決着日時</th>
+          <td class="filter--td">
+            <input type="date" name="fromDate" class="date calendar-picker" />
+            <input type="time" name="fromTime" class="time calendar-picker" />
+            <span class="spacing2">～</span>
+            <input type="date" name="toDate" class="date calendar-picker" />
+            <input type="time" name="toTime" class="time calendar-picker" />
           </td>
       </table>
-    </div>
+    </form>
     <div>
-      <!--自分を一行目、味方を2行目に-->
       <table id="replay-list" class="detail-table">
         <thead id="replay-sorter" class="detail-table--thead">
           <tr>
@@ -53,12 +91,14 @@
     <ul>
       <li>複数選択で何も選択しない場合は、全て選択している場合と同じ動作になります。</li>
       <li>試合のプレイヤーは自分>相方>敵の順に並び替えられます。</li>
+      <li>「あなたの名前」には試合数が一番多いプレイヤーの名前が自動的に設定されます。</li>
     </ul>
   </div>
   <div class="label">
-    バグなど
+    バグ・未実装など
     <ul>
-      <li>ゲームモード「野良」判定が多分できてません</li>
+      <li>ゲームモード「野良」「NPC」判定ができてません</li>
+      <li>「あなたの名前」を変更しても何も起こりません</li>
     </ul>
   </div>
   <footer class="center">created by <a href="https://twitter.com/tiramisu_oTATo" class="link">@tiramisu_oTATo</a>

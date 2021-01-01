@@ -619,3 +619,7 @@ input:checked+.button::after {
   transition: transform var(--transition-duration) var(--transition-curve);
   transform: rotate(405deg);
 }
+
+.unmarkable {
+  opacity: 0.3;
+}

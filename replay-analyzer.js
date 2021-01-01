@@ -252,7 +252,9 @@ window.addEventListener("load", () => {
   const GameModeName = new NameGetter([
     [0, "1v1"],
     [1, "プリメイド"],
-    [2, "野良？"]
+    [2, "野良？"],
+    // 未実装
+    [3, "NPC"]
   ]);
 
   const
@@ -263,11 +265,13 @@ window.addEventListener("load", () => {
   const Replay = (arrayBuffer) => {
     const
       dataView = new DataView(arrayBuffer),
+      gameMode = dataView.getUint32(findStringIndex(dataView, "CSLogic.TeamMode", 0x07A8) + 0x22, true),
       // toUnixTime(想定してた式と違って差分から力技したので誤差あるかも)
       time = Number((BigInt(dataView.getUint32(0x037B, true)) + (BigInt(dataView.getUint32(0x037F, true)) << 32n)) / 10000n - 523304371445000n);
 
     return Object.freeze({
-      gameMode: dataView.getUint32(findStringIndex(dataView, "CSLogic.TeamMode", 0x07A8) + 0x22, true),
+      gameMode,
+      gameMode_f: 1 << gameMode,
       duration: dataView.getUint32(0x0372, true), // 0.1sec単位
       time,
       date: new Date(time),
@@ -275,12 +279,13 @@ window.addEventListener("load", () => {
       players: getPlayers(dataView, this.duration === 0),
       graphFragments: [],
       graphFragmentVisibilities: [],
+      // 後から追加するもの
       you: {},
       tBody: document.createElement("tbody")
     });
   };
 
-  const getDeckString = (deck) => deck?.map(cardId => CardName.get(cardId)).sort().join(" / ");
+  const getDeckString = (deck) => deck?.map(cardId => CardName.get(cardId)).sort().join(' <span class="unmarkable">/</span> ');
 
   const findStringIndex = (dataView, string, startIndex = 0, count = 1) => {
     let index = startIndex;
@@ -367,6 +372,15 @@ window.addEventListener("load", () => {
   const Player = (name, guildName, masterId, deck, team, rankId) => Object.freeze({ name, team, rankId, guildName, masterId, deck });
 
   class ReplayManager {
+
+
+    static sort = (() => {
+      UIManager.constructFilterProperties();
+      Array.from(this.#replays).filter(this.#filterFunc).sort(this.#sortFunc).forEach((replay) => {
+        this.#replayListElement.appendChild(replay.tBody);
+      });
+    }).bind(this);
+
     static #replays;
     static #replaysCount;
     static #playerNameCounter;
@@ -383,34 +397,30 @@ window.addEventListener("load", () => {
       this.#playerNameCounter.count(replay.players, "name");
     }).bind(this);
 
+    static #filterFunc = ((replay) => {
+      for (const filterProperty of UIManager.filterProperties) {
+        if (filterProperty.test(replay)) {
+          continue;
+        }
+        replay.tBody.hidden = true;
+        return false;
+      }
+      replay.tBody.hidden = false;
+      return true;
+    }).bind(this);
+
     static #init = this.#initialize();
 
     static #initialize() {
       this.#fileInputElement.addEventListener("change", this.#onFileChange);
     }
 
-    static sort() {
-      Array.from(this.#replays).filter(this.#filterFunc).sort(this.#sortFunc).forEach((replay) => {
-        this.#replayListElement.appendChild(replay.tBody);
-      });
-    }
-
-    static #filterFunc(replay) {
-      for (const filter of UIManager.getFilterProperties()) {
-        if (filter.test(replay)) {
-          continue;
-        }
-        this.#replayListElement.removeChild(replay.tBody);
-        return false;
-      }
-      return true;
-    }
 
     static #sortFunc(replay, b) {
       for (const [propertyName, isAscend] of UIManager.sortPriorities) {
         if (propertyName === "winTeamId") {
-          if (replay.you.exist !== b.you.exist) {
-            return (b.you.exist ^ isAscend) * 2 - 1;
+          if (replay.you.exists !== b.you.exists) {
+            return (b.you.exists ^ isAscend) * 2 - 1;
           }
           if (replay.you.areTheWinner === b.you.areTheWinner)
             continue;
@@ -457,7 +467,7 @@ window.addEventListener("load", () => {
       UIManager.setFilterValue(this.#yourName, "name");
       for (const replay of this.#replays) {
         const you = replay.players.find((player) => player.name === this.#yourName);
-        replay.you.exist = you !== undefined;
+        replay.you.exists = you !== undefined;
         replay.you.areTheWinner = (replay.winTeamId === you?.team ?? 0);
         this.#createTBody(replay);
       }
@@ -468,6 +478,7 @@ window.addEventListener("load", () => {
     }
 
     static async #loadJson() {
+      // .find()未対応のため
       for (const file of this.#fileInputElement.files) {
         if (!this.#settingFileName.test(file.webkitRelativePath))
           continue;
@@ -486,8 +497,7 @@ window.addEventListener("load", () => {
         durationString = `${BigInt(replay.duration) / 600n}:${"0".repeat(2 - seconds.length)}${seconds}`,
         you = replay.players.find((player) => player.name === this.#yourName),
         isWinner = replay.winTeamId === (you?.team ?? 0),
-        players = (you === undefined) ? replay.players : replay.players.sort((player1, player2) =>
-          //        player1 === you ? -1 : player2 === you ? 1 : player1.team === you.team ? 1 
+        players = (you === undefined) ? replay.players : replay.players.sort((player1, _player2) =>
           player1 === you ? -1 : player1.team === you.team ? -1 : 0
         );
 
@@ -571,38 +581,36 @@ window.addEventListener("load", () => {
   }
 
   class UIManager {
-    static #filterProperties = new Map();
+    static #filterProperties = new Set();
+    static get filterProperties() {
+      return this.#filterProperties;
+    }
+
     static #sortProperties = new SortPropertyStack([["time", false]]);
     static get sortPriorities() {
       return this.#sortProperties;
     }
 
     static #filterElementOf = {
-      name: $id("filter-your-name"),/*
+      filter: document.filter,
+      name: filter.yourName,
+      you: filter.you,
+      gameMode1v1: filter.gameMode1v1,
+      gameMode2v2: filter.gameMode2v2,
+      gameModePremade: filter.gameModePremade,
+      gameModeNPC: filter.gameModeNPC,/*
       players: new Set(),
       playerAdditionButton: $id("filter-player-add"),
       cards: new Set(),
-      cardAdditionButton: $id("filter-card-add"),
-      duration: {
-        greaterThan: {
-          min: $id("filter-gt-mins"),
-          sec: $id("filter-gt-secs")
-        },
-        lessThan: {
-          min: $id("filter-gt-mins"),
-          sec: $id("filter-gt-secs")
-        }
-      },
-      date: {
-        begin: {
-          date: $id("filter-begin-date"),
-          time: $id("filter-begin-time")
-        },
-        end: {
-          date: $id("filter-end-date"),
-          time: $id("filter-end-time")
-        }
-      },
+      cardAdditionButton: $id("filter-card-add"),*/
+      durationGreaterThanMin: filter.gtMins,
+      durationGreaterThanSec: filter.gtSecs,
+      durationLessThanMin: filter.ltMins,
+      durationLessThanSec: filter.ltSecs,
+      fromDate: filter.fromDate,
+      fromTime: filter.fromTime,
+      toDate: filter.toDate,
+      toTime: filter.toTime,/*
       playerNameList: $id("player-name"),
       cardList: $id("card-name"),*/
       sorter: $id("replay-sorter")
@@ -618,10 +626,42 @@ window.addEventListener("load", () => {
         this.#sortProperties.set(propertyName);
         ReplayManager.sort();
       });
+      for (const radio of this.#filterElementOf.you)
+        radio.addEventListener("change", ReplayManager.sort);
+      for (const textInputName of [
+        "name",
+        "durationGreaterThanMin",
+        "durationGreaterThanSec",
+        "durationLessThanMin",
+        "durationLessThanSec",
+        "fromDate",
+        "fromTime",
+        "toDate",
+        "toTime"
+      ]) {
+        const element = this.#filterElementOf[textInputName];
+        element.dataset.defaultValue = element.value ?? "";
+        element.addEventListener("change", ReplayManager.sort);
+        element.addEventListener("click", this.#select);
+        element.addEventListener("dblclick", this.#onTextInputDoubleClick);
+      }
+      for (const gameModeCheckboxName of [
+        "gameMode1v1",
+        "gameMode2v2",
+        "gameModePremade",
+        "gameModeNPC"
+      ]) {
+        this.#filterElementOf[gameModeCheckboxName].addEventListener("change", ReplayManager.sort);
+      }
+    }
+
+    static #select(e) {
+      e.target.select();
     }
 
     static #onTextInputDoubleClick(e) {
-      e.target.value = "";
+      const target = e.target;
+      target.value = target.dataset.defaultValue;
     }
 
     static addFilterOption() {
@@ -632,15 +672,46 @@ window.addEventListener("load", () => {
       return (winsCount === 0 && losesCount === 0) ? "該当なし" : `${winsCount} 勝${losesCount} 敗`
     }
 
-    static getFilterProperties() {
-      return this.#filterProperties;
+    static constructFilterProperties() {
+      this.#filterProperties = new Set();
+      let element = this.#filterElementOf.you;
+      if (element.value !== "any")
+        this.#filterProperties.add(new FilterProperty(element.value === "include", FilterProperty.Mode.Same, "you", "exists"));
+      let
+        sec = this.#filterElementOf.durationGreaterThanSec.valueAsNumber,
+        min = this.#filterElementOf.durationGreaterThanMin.valueAsNumber;
+      if (min !== 0 || sec !== 0)
+        this.#filterProperties.add(new FilterProperty(min * 600 + sec * 10, FilterProperty.Mode.GreaterThanOrEqual, "duration"));
+      sec = this.#filterElementOf.durationLessThanSec.valueAsNumber;
+      min = this.#filterElementOf.durationLessThanMin.valueAsNumber;
+      if (min !== 99 || sec !== 59)
+        this.#filterProperties.add(new FilterProperty(min * 600 + sec * 10 + 9, FilterProperty.Mode.LessThanOrEqual, "duration"));
+      let
+        date = this.#filterElementOf.fromDate.valueAsNumber;
+      if (!Number.isNaN(date)) {
+        const time = this.#filterElementOf.fromTime.valueAsNumber;
+        const dateAsUTC = new Date(date + (Number.isNaN(time) ? 0 : time));
+        this.#filterProperties.add(new FilterProperty(dateAsUTC.getTime() + dateAsUTC.getTimezoneOffset() * 60000, FilterProperty.Mode.GreaterThanOrEqual, "time"));
+      }
+      date = this.#filterElementOf.toDate.valueAsNumber;
+      if (!Number.isNaN(date)) {
+        const time = this.#filterElementOf.toTime.valueAsNumber;
+        const dateAsUTC = new Date(date + (Number.isNaN(time) ? 86400000 : time));
+        this.#filterProperties.add(new FilterProperty(dateAsUTC.getTime() + dateAsUTC.getTimezoneOffset() * 60000 + 60000, FilterProperty.Mode.LessThanOrEqual, "time"));
+      }
+      const gameMode_f = (this.#filterElementOf.gameMode1v1.checked << 0)
+        + (this.#filterElementOf.gameModePremade.checked << 1)
+        + (this.#filterElementOf.gameMode2v2.checked << 2)
+        + (this.#filterElementOf.gameModeNPC << 3);
+      if (gameMode_f !== 0 && gameMode_f !== 0b1111)
+        this.#filterProperties.add(new FilterProperty(gameMode_f, FilterProperty.Mode.BinaryFlag, "gameMode_f"));
     }
 
     static setFilterValue(value, propertyName) {
       this.#filterElementOf[propertyName].value = value;
     }
   }
-/*
+  /*
   class Graph {
     static #element = $id("graph");
     static #fragmentTemplate = $id("template--graph-fragment");
@@ -655,7 +726,70 @@ window.addEventListener("load", () => {
       dataset.master = replay.players.map((player) => MasterName.get(player.masterId)).join("/");
     }
   }
-*/
+  */
+
+  class FilterProperty {
+    static Mode = {
+      Same: Symbol("Same Mode"),
+      Different: Symbol("Different Mode"),
+      Included: Symbol("Included Mode"),
+      Excluded: Symbol("Excluded Mode"),
+      GreaterThanOrEqual: Symbol("GreaterThanOrEqual Mode"),
+      LessThanOrEqual: Symbol("LessThanOrEqual Mode"),
+      BinaryFlag: Symbol("BinaryFlag Mode")
+    };
+
+    #names;
+    #value;
+    #comparer;
+    #inverted = 0;
+
+    constructor(value, mode, ...names) {
+      this.#names = names;
+      this.#value = value;
+      switch (mode) {
+        case FilterProperty.Mode.Same:
+          this.#comparer = this.#same;
+          break;
+        case FilterProperty.Mode.GreaterThanOrEqual:
+          this.#comparer = this.#lessThan;
+          this.#inverted = 1;
+          break;
+        case FilterProperty.Mode.LessThanOrEqual:
+          this.#comparer = this.#greaterThan;
+          this.#inverted = 1;
+          break;
+        case FilterProperty.Mode.BinaryFlag:
+          this.#comparer = this.#binaryFlag;
+          break;
+        case FilterProperty.Mode.Included:
+        case FilterProperty.Mode.Excluded:
+        default:
+          throw `mode is not defined`;
+      }
+      console.log(value);
+    }
+
+    test(replayValue) {
+      for (const name of this.#names)
+        replayValue = replayValue[name];
+      return (this.#comparer(replayValue) ? 1 : 0) ^ this.#inverted;
+    }
+
+    #same(value) {
+      return value === this.#value;
+    }
+    #greaterThan(value) {
+      return value > this.#value;
+    }
+    #lessThan(value) {
+      return value < this.#value;
+    }
+    #binaryFlag(value) {
+      return value & this.#value;
+    }
+  }
+
   class JsonReader {
     static read(additionalJSON) {
       return;
