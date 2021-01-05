@@ -427,9 +427,9 @@ input:checked+.button::after {
 }
 
 .detail-table {
-  min-width: max-content;
   border-collapse: collapse;
   margin-bottom: 32px;
+  min-width: max-content;
 }
 
 .detail-table--thead>tr>th {
@@ -496,6 +496,12 @@ input:checked+.button::after {
 .all-table--tbody {
   border-top: solid 1px rgb(255, 255, 0, 0.2);
   text-align: center;
+  opacity: 0.8;
+}
+
+.detail-table--ready>.all-table--tbody {
+  transition: opacity 0.1s var(--transition-curve);
+  opacity: 1;
 }
 
 .all-table--tbody>tr>td:nth-last-child(1) {
@@ -568,10 +574,11 @@ input:checked+.button::after {
 .loading-screen {
   position: absolute;
   transition: opacity 0.8s var(--transition-curve);
+  opacity: 0;
 }
 
-.ready>.loading-screen {
-  opacity: 0;
+.loading+.loading-screen {
+  opacity: 1;
 }
 
 .invalid {

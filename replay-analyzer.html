@@ -11,20 +11,8 @@
 
 <body>
   <div id="result" class="result">
-    <div class="loading-screen">ロード中</div>
     <form name="filter" class="label">
       <table class="filter--table">
-        <tr>
-          <th class="filter--th">あなたの名前</th>
-          <td class="filter--td">
-            <div class="fieldset">
-              <input name="yourName" list="player-names" class="input" />
-              <label><input type="radio" name="you" value="include" checked hidden><span
-                  class="radio-label button">を含む</span></label>
-              <label><input type="radio" name="you" value="exclude" hidden><span class="radio-label button">以外</span></label>
-              <label><input type="radio" name="you" value="any" hidden><span class="radio-label button">気にしない</span></label>
-            </div>
-          </td>
         <tr>
           <th class="filter--th">ゲームモード</th>
           <td class="filter--td">
@@ -37,6 +25,17 @@
                   class="checkbox-label button">プリメイド</span></label>
               <label hidden><input type="checkbox" name="gameModeNPC" hidden checked><span
                   class="checkbox-label button">NPC</span></label>
+            </div>
+          </td>
+        <tr>
+          <th class="filter--th">あなたの名前</th>
+          <td class="filter--td">
+            <div class="fieldset">
+              <input name="yourName" list="player-names" class="input" />
+              <label><input type="radio" name="you" value="include" checked hidden><span
+                  class="radio-label button">を含む</span></label>
+              <label><input type="radio" name="you" value="exclude" hidden><span class="radio-label button">以外</span></label>
+              <label><input type="radio" name="you" value="any" hidden><span class="radio-label button">気にしない</span></label>
             </div>
           </td>
         <tr>
@@ -77,6 +76,7 @@
       </table>
     </div>
   </div>
+  <div class="loading-screen">ロード中</div>
   <div class="label">
     <table class="filter--table">
       <tr>

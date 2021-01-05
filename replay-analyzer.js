@@ -1,5 +1,31 @@
 window.addEventListener("load", () => {
   "use strict";
+  const Const = Object.freeze({
+    EMPTY_STRING: Object.freeze(""),
+    EMPTY_ARRAY: Object.freeze([]),
+    EMPTY_OBJECT: Object.freeze({}),
+    LOCALE_FORMAT: Object.freeze({
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit"
+    }),
+    TEAM_BATTLE_CLASS_NAME: "team-battle",
+    SOLO_BATTLE_CLASS_NAME: "solo-battle",
+    WIN_BATTLE_CLASS_NAME: "win",
+    LOSE_BATTLE_CLASS_NAME: "lose",
+    WIN_STRING: "勝ち",
+    LOSE_STRING: "負け",
+    SORT_PRIOR_PROPERTY_NAME: "winTeamId",
+    YOU_EXIST_CLASS: ' class="you"',
+    ADJACENT_POSITION: "beforeend",
+    INVISIBLE_ZERO: '<span class="spacer0">0</span>',
+    TEXT_ENCODE: "utf-8",
+    CSLogic_PlayerData: "CSLogic.PlayerData",
+    CSLogic_TeamMode: "CSLogic.TeamMode"
+  });
+
   class NameGetter {
     #map;
     #defaultMapLikeArray;
@@ -260,12 +286,20 @@ window.addEventListener("load", () => {
   const
     $id = (id) => document.getElementById(id),
     $x = (number) => '0x' + number.toString(16).toUpperCase(),
-    $escape = (string) => string.replace(/<.+?>/, "");
+    $escapeRegExp = new RegExp(/<.+?>/),
+    $escape = (string) => string.replace($escapeRegExp, Const.EMPTY_STRING),
+    $sleep = (sec) => new Promise((resolve) => setTimeout(resolve, sec * 1000)),
+    // 長い処理の前にUIを更新したい場合、UIの更新前と処理の前に await $applicationOfUi();
+    $applicationOfUi = (async () => {
+      await new Promise(requestAnimationFrame);
+      // await Promise.resolve()じゃダメっぽいが、理解できてない
+      await $sleep(0);
+    });
 
   const Replay = (arrayBuffer) => {
     const
       dataView = new DataView(arrayBuffer),
-      gameMode = dataView.getUint32(findStringIndex(dataView, "CSLogic.TeamMode", 0x07A8) + 0x22, true),
+      gameMode = dataView.getUint32(findStringIndex(dataView, Const.CSLogic_TeamMode, 0x07A8) + 0x22, true),
       // toUnixTime(想定してた式と違って差分から力技したので誤差あるかも)
       time = Number((BigInt(dataView.getUint32(0x037B, true)) + (BigInt(dataView.getUint32(0x037F, true)) << 32n)) / 10000n - 523304371445000n);
 
@@ -329,14 +363,14 @@ window.addEventListener("load", () => {
     return -1;
   };
 
-  const getString = (buffer, byteOffset, length) => new TextDecoder("utf-8").decode(
+  const getString = (buffer, byteOffset, length) => new TextDecoder(Const.TEXT_ENCODE).decode(
     new Uint8Array(buffer, byteOffset, length)
   );
 
   const getPlayers = (dataView) => {
     const players = [];
     const isZeroDuration = (dataView.getUint8(0x0399, true) === 0x0A);
-    let targetAddress = findStringIndex(dataView, "CSLogic.PlayerData", isZeroDuration ? 0x987 : 0xA88);
+    let targetAddress = findStringIndex(dataView, Const.CSLogic_PlayerData, isZeroDuration ? 0x987 : 0xA88);
     let deckAddress = 0x1500;
     let length = 0x588;
     const playerCount = dataView.getUint32(isZeroDuration ? 0x03A6 : 0x03AA, true);
@@ -357,7 +391,7 @@ window.addEventListener("load", () => {
       targetAddress += (i === 0 ? 0x41 : 0x20);
       if (dataView.getUint8(targetAddress) === 0x0A) {
         length = 0;
-        player.guildName = "";
+        player.guildName = null;
       }
       else {
         targetAddress += 0x05;
@@ -372,29 +406,42 @@ window.addEventListener("load", () => {
   const Player = (name, guildName, masterId, deck, team, rankId) => Object.freeze({ name, team, rankId, guildName, masterId, deck });
 
   class ReplayManager {
-
-
-    static sort = (() => {
+    static sort = (async () => {
+      if (this.#isSorting)
+        return;
+      this.#isSorting = true;
+      ReplayTable.setReady(false);
+      await $applicationOfUi();
       UIManager.constructFilterProperties();
-      Array.from(this.#replays).filter(this.#filterFunc).sort(this.#sortFunc).forEach((replay) => {
-        this.#replayListElement.appendChild(replay.tBody);
-      });
+      await Promise.all([new Promise(this.#sort), $sleep(0.1)]);
+      ReplayTable.setReady(true);
+      this.#isSorting = false;
     }).bind(this);
+
 
     static #replays;
     static #replaysCount;
     static #playerNameCounter;
     static #fileInputElement = $id("replay-directory");
-    static #replayListElement = $id("replay-list");
     static #loadProggressBar = $id("progress");
+    static #isSorting = false;
+    static #isLoading = false;
     static #replayRegExp = /[.]rp$/;
     static #settingFileName = /[/]replay-analyzer.json/;
-    static #yourName = "";
+    static #yourName = Const.EMPTY_STRING;
 
     static #addReplay = ((binary) => {
       const replay = Replay(binary);
       this.#replays.add(replay);
       this.#playerNameCounter.count(replay.players, "name");
+    }).bind(this);
+
+    static #sort = ((resolve) => {
+      Array.from(this.#replays)
+        .filter(this.#filterFunc)
+        .sort(this.#sortFunc)
+        .forEach(ReplayTable.addReplay);
+      resolve();
     }).bind(this);
 
     static #filterFunc = ((replay) => {
@@ -415,10 +462,9 @@ window.addEventListener("load", () => {
       this.#fileInputElement.addEventListener("change", this.#onFileChange);
     }
 
-
     static #sortFunc(replay, b) {
       for (const [propertyName, isAscend] of UIManager.sortPriorities) {
-        if (propertyName === "winTeamId") {
+        if (propertyName === Const.SORT_PRIOR_PROPERTY_NAME) {
           if (replay.you.exists !== b.you.exists) {
             return (b.you.exists ^ isAscend) * 2 - 1;
           }
@@ -438,10 +484,12 @@ window.addEventListener("load", () => {
     }
 
     static async #load() {
-      // TODO 多重ロード防止
-      const resultState = $id("result").classList;
-      resultState.remove("ready");
-      resultState.add("loading");
+      if (this.#isLoading)
+        return;
+      this.#isLoading = true;
+      ResultDiv.setReady(false);
+      await $applicationOfUi();
+      CountUpTimer.start(true);
       this.#replays = new Set();
       this.#replaysCount = 0;
       this.#playerNameCounter = new Counter();
@@ -451,7 +499,8 @@ window.addEventListener("load", () => {
       MasterName.load();
       GameModeName.load();
       // TODOここまで
-      const promises = [];
+      const promises = new Set();
+      CountUpTimer.lap();
       for (const file of this.#fileInputElement.files) {
         const path = file.webkitRelativePath;
         if (!this.#replayRegExp.test(path)) {
@@ -460,9 +509,18 @@ window.addEventListener("load", () => {
         this.#replaysCount += 1;
         // ローカルファイルでもstreamで開くと早くなるのか謎なので保留
         //file.stream().then();
-        promises.push(file.arrayBuffer().then(this.#addReplay));
+        promises.add(file.arrayBuffer().then(this.#addReplay));
       }
+      if (this.#replaysCount === 0) {
+        ResultDiv.initializeReady();
+        this.#isLoading = false;
+        alert("選択フォルダ内にリプレイファイルが存在しませんでした。");
+        return;
+      }
+      promises.add(ReplayTable.clear());
+      CountUpTimer.lap();
       await Promise.all(promises);
+      CountUpTimer.lap();
       this.#yourName = this.#playerNameCounter.max();
       UIManager.setFilterValue(this.#yourName, "name");
       for (const replay of this.#replays) {
@@ -471,10 +529,11 @@ window.addEventListener("load", () => {
         replay.you.areTheWinner = (replay.winTeamId === you?.team ?? 0);
         this.#createTBody(replay);
       }
-      this.sort();
-      resultState.remove("loading");
-      resultState.add("ready");
+      await this.sort();
+      ResultDiv.setReady(true);
       console.log(`${this.#replaysCount}試合のリプレイの読み込みが完了しました`);
+      CountUpTimer.lap();
+      this.#isLoading = false;
     }
 
     static async #loadJson() {
@@ -501,37 +560,31 @@ window.addEventListener("load", () => {
           player1 === you ? -1 : player1.team === you.team ? -1 : 0
         );
 
-      tBody.className = `detail-table--tbody all-table--tbody ${isTeamBattle ? "team-battle" : "solo-battle"} ${isWinner ? "win" : "lose"}`;
-      tBody.innerHTML = `<tr${players[0] === you ? ' class="you"' : ""}>
-            <td rowspan="4">${new Intl.DateTimeFormat([], {
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit"
-      }).format(replay.date)}</td>
-            <td rowspan="4">${durationString.length <= 4 ? '<span class="spacer0">0</span>' : ""}${durationString}</td>
+      tBody.className = `detail-table--tbody all-table--tbody ${isTeamBattle ? Const.TEAM_BATTLE_CLASS_NAME : Const.SOLO_BATTLE_CLASS_NAME} ${isWinner ? Const.WIN_BATTLE_CLASS_NAME : Const.LOSE_BATTLE_CLASS_NAME}`;
+      tBody.insertAdjacentHTML(Const.ADJACENT_POSITION, `<tr${players[0] === you ? Const.YOU_EXIST_CLASS : Const.EMPTY_STRING}>
+            <td rowspan="4">${new Intl.DateTimeFormat(Const.EMPTY_ARRAY, Const.LOCALE_FORMAT).format(replay.date)}</td>
+            <td rowspan="4">${durationString.length <= 4 ? Const.INVISIBLE_ZERO : Const.EMPTY_STRING}${durationString}</td>
             <td rowspan="4">${GameModeName.get(replay.gameMode)}</td>
-            <td rowspan="4">${(you === undefined) ? "" : isWinner ? "勝ち" : "負け"}</td>
-            <td${players[0]?.name ? "" : ' class="invalid"'}>${players[0]?.name}</td>
+            <td rowspan="4">${(you === undefined) ? Const.EMPTY_STRING : isWinner ? Const.WIN_STRING : Const.LOSE_STRING}</td>
+            <td${players[0]?.name ? Const.EMPTY_STRING : ' class="invalid"'}>${players[0]?.name}</td>
             <td>${MasterName.get(players[0]?.masterId)}</td>
             <td>${getDeckString(players[0]?.deck) ?? "エラーなし"}</td>
           </tr>
           <tr>
-            <td${players[1]?.name ? "" : ' class="invalid"'}>${players[1]?.name}</td>
+            <td${players[1]?.name ? Const.EMPTY_STRING : ' class="invalid"'}>${players[1]?.name}</td>
             <td>${MasterName.get(players[1]?.masterId)}</td>
             <td>${getDeckString(players[1]?.deck) ?? "エラーなし"}</td>
           </tr>${isTeamBattle ? `
           <tr>
-            <td${players[2]?.name ? "" : ' class="invalid"'}>${players[2]?.name}</td>
+            <td${players[2]?.name ? Const.EMPTY_STRING : ' class="invalid"'}>${players[2]?.name}</td>
             <td>${MasterName.get(players[2]?.masterId)}</td>
             <td>${getDeckString(players[2]?.deck) ?? "エラーなし"}</td>
           </tr>
           <tr>
-            <td${players[3]?.name ? "" : ' class="invalid"'}>${players[3]?.name}</td>
+            <td${players[3]?.name ? Const.EMPTY_STRING : ' class="invalid"'}>${players[3]?.name}</td>
             <td>${MasterName.get(players[3]?.masterId)}</td>
             <td>${getDeckString(players[3]?.deck) ?? "エラーなし"}</td>
-          </tr>` : ""}`;
+          </tr>` : Const.EMPTY_STRING}`);
     }
   }
 
@@ -600,8 +653,10 @@ window.addEventListener("load", () => {
       gameModePremade: filter.gameModePremade,
       gameModeNPC: filter.gameModeNPC,/*
       players: new Set(),
+      playerNameList: $id("player-name"),
       playerAdditionButton: $id("filter-player-add"),
       cards: new Set(),
+      cardList: $id("card-name"),
       cardAdditionButton: $id("filter-card-add"),*/
       durationGreaterThanMin: filter.gtMins,
       durationGreaterThanSec: filter.gtSecs,
@@ -610,9 +665,7 @@ window.addEventListener("load", () => {
       fromDate: filter.fromDate,
       fromTime: filter.fromTime,
       toDate: filter.toDate,
-      toTime: filter.toTime,/*
-      playerNameList: $id("player-name"),
-      cardList: $id("card-name"),*/
+      toTime: filter.toTime,
       sorter: $id("replay-sorter")
     };
     //static #filterOptionTemplate = $id("filter-option");
@@ -662,10 +715,6 @@ window.addEventListener("load", () => {
     static #onTextInputDoubleClick(e) {
       const target = e.target;
       target.value = target.dataset.defaultValue;
-    }
-
-    static addFilterOption() {
-
     }
 
     static #getWinsString(winsCount, losesCount) {
@@ -728,8 +777,54 @@ window.addEventListener("load", () => {
   }
   */
 
+  class ResultDiv {
+    static #element = $id("result");
+    static #classList = this.#element.classList;
+    static #readyClassName = "ready";
+    static #loadingClassName = "loading";
+
+    static setReady(isReady) {
+      if (isReady) {
+        this.#classList.remove(this.#loadingClassName);
+        this.#classList.add(this.#readyClassName);
+      }
+      else {
+        this.#classList.remove(this.#readyClassName);
+        this.#classList.add(this.#loadingClassName);
+      }
+    }
+
+    static initializeReady() {
+      this.#classList.remove(this.#loadingClassName);
+      this.#classList.remove(this.#readyClassName);
+    }
+  }
+
+  class ReplayTable {
+    static #element = $id("replay-list");
+    static #classList = this.#element.classList;
+
+    static addReplay = ((replay) => {
+      // TODO ソートだけの場合はflex-orderのほうがはやいかも
+      this.#element.appendChild(replay.tBody);
+    }).bind(this);
+
+    static setReady(isReady) {
+      if (isReady)
+        this.#classList.add("detail-table--ready");
+      else
+        this.#classList.remove("detail-table--ready");
+    }
+
+    static async clear() {
+      for (const tBody of this.#element.tBodies) {
+        this.#element.removeChild(tBody);
+      }
+    }
+  }
+
   class FilterProperty {
-    static Mode = {
+    static Mode = Object.freeze({
       Same: Symbol("Same Mode"),
       Different: Symbol("Different Mode"),
       Included: Symbol("Included Mode"),
@@ -737,7 +832,7 @@ window.addEventListener("load", () => {
       GreaterThanOrEqual: Symbol("GreaterThanOrEqual Mode"),
       LessThanOrEqual: Symbol("LessThanOrEqual Mode"),
       BinaryFlag: Symbol("BinaryFlag Mode")
-    };
+    });
 
     #names;
     #value;
@@ -802,6 +897,28 @@ window.addEventListener("load", () => {
         MasterName.load(object?.masterNames);
         GameModeName.load(object?.gameModeNames);
       }
+    }
+  }
+
+  // for debug
+  class CountUpTimer {
+    #start;
+    constructor(isLogRemained) {
+      if (isLogRemained)
+        console.log(`start timer`);
+      this.#start = Date.now();
+    }
+    lap() {
+      console.log(`${(Date.now() - this.#start) / 1000}sec`);
+      this.#start = Date.now();
+    }
+
+    static #globalTimer;
+    static start(isLogRemained) {
+      this.#globalTimer = new CountUpTimer(isLogRemained);
+    }
+    static lap() {
+      this.#globalTimer?.lap();
     }
   }
 });
