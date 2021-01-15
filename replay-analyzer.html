@@ -81,6 +81,17 @@
           <th class="detail-table--th">勝</th>
           <th class="detail-table--th">敗</th>
         </tr>
+      <tfoot class="detail-table--tfoot">
+        <tr>
+          <td>
+          <td>
+          <td>
+          <td>
+          <td>
+          <td>
+          <td>
+        </tr>
+      </tfoot>
     </table>
     <form name="filter" class="label">
       <table class="filter--table">
@@ -105,14 +116,17 @@
               <input name="yourName" list="player-names" class="input" />
               <label><input type="radio" name="you" value="include" checked hidden><span
                   class="radio-label button">を含む</span></label>
-              <label><input type="radio" name="you" value="exclude" hidden><span class="radio-label button">以外</span></label>
-              <label><input type="radio" name="you" value="any" hidden><span class="radio-label button">気にしない</span></label>
+              <label><input type="radio" name="you" value="exclude" hidden><span
+                  class="radio-label button">以外</span></label>
+              <label><input type="radio" name="you" value="any" hidden><span
+                  class="radio-label button">気にしない</span></label>
             </div>
           </td>
         <tr>
           <th class="filter--th">試合時間</th>
           <td class="filter--td">
-            <input type="number" name="gtMins" step="1" min="0" max="99" value="0" data-default-value="0" class="number2" />
+            <input type="number" name="gtMins" step="1" min="0" max="99" value="0" data-default-value="0"
+              class="number2" />
             <span class="spacing1">:</span>
             <input type="number" name="gtSecs" min="0" max="59" value="0" class="number2" />
             <span class="spacing2">～</span>
@@ -131,30 +145,31 @@
           </td>
       </table>
     </form>
-    <div>      <table id="replay-list" class="detail-table">
-      <thead id="replay-sorter">
-        <tr>
-          <th data-sort="time" class="detail-table--th sortable-th">決着日時</th>
-          <th data-sort="duration" class="detail-table--th sortable-th">試合時間</th>
-          <th data-sort="gameMode" class="detail-table--th sortable-th">モード</th>
-          <th data-sort="winTeamId" class="detail-table--th sortable-th">勝敗</th>
-          <th class="detail-table--th">プレイヤー</th>
-          <th class="detail-table--th">マスター</th>
-          <th class="detail-table--th">デッキ</th>
-        </tr>
-      </thead>
-      <tfoot class="detail-table--tfoot">
-        <tr>
-          <td>
-          <td>
-          <td>
-          <td>
-          <td>
-          <td>
-          <td>
-        </tr>
-      </tfoot>
-    </table>
+    <div>
+      <table id="replay-list" class="detail-table">
+        <thead id="replay-sorter">
+          <tr>
+            <th data-sort="time" class="detail-table--th sortable-th">決着日時</th>
+            <th data-sort="duration" class="detail-table--th sortable-th">試合時間</th>
+            <th data-sort="gameMode" class="detail-table--th sortable-th">モード</th>
+            <th data-sort="winTeamId" class="detail-table--th sortable-th">勝敗</th>
+            <th class="detail-table--th">プレイヤー</th>
+            <th class="detail-table--th">マスター</th>
+            <th class="detail-table--th">デッキ</th>
+          </tr>
+        </thead>
+        <tfoot class="detail-table--tfoot">
+          <tr>
+            <td>
+            <td>
+            <td>
+            <td>
+            <td>
+            <td>
+            <td>
+          </tr>
+        </tfoot>
+      </table>
     </div>
   </div>
   <div class="loading-screen">ロード中</div>
@@ -184,7 +199,8 @@
     </ul>
   </div>
   <footer class="center">created by <a href="https://twitter.com/tiramisu_oTATo" class="link">@tiramisu_oTATo</a>
-    (unofficial)<br>If there are any problems, please contact me.(note: This tool is WIP)<br>問題があればご連絡ください(開発中のツールです)</footer>
+    (unofficial)<br>If there are any problems, please contact me.(note: This tool is WIP)<br>問題があればご連絡ください(開発中のツールです)
+  </footer>
   <datalist id="player-names">
     <option value="Chocolate">
     <option value="Coconut">
