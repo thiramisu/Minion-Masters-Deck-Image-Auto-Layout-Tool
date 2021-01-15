@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="utf-8">
-  <title>Minion Masters リプレイ分析ツール</title>
+  <title>Minion Masters Replay Analyzer</title>
   <link rel="stylesheet" href="minimas.css" />
   <link rel="icon" type="image/png" href="icon.png" />
   <script src="replay-analyzer.js" defer></script>
@@ -11,6 +11,77 @@
 
 <body>
   <div id="result" class="result">
+    <div class="label summary-box">
+      <div class="summary--child">試合数
+        <div id="match-count" class="match-count"></div>
+      </div>
+      <div class="summary--child">
+        <div>勝率 - <span id="wins"></span>勝<span id="loses"></span>敗</div>
+        <div class="win-rate"><span id="win-rate-integer"></span><span class="win-rate--super">.<span
+              id="win-rate-decimal"></span></span><span class="win-rate--percent">%</span>
+        </div>
+      </div>
+    </div>
+    <div class="flex-row">
+      <select id="summary-selector" class="input">
+        <option data-t-head="master" data-t-body="yourMaster" class="graph-selector--option">自分のマスター
+        </option>
+        <option data-t-head="deck" data-t-body="yourDeck" class="graph-selector--option" selected>自分のデッキ
+        </option>
+        <option data-t-head="card" data-t-body="yourCard" class="graph-selector--option">自分のカード
+        </option>
+        <option data-t-head="master" data-t-body="otherMaster" class="graph-selector--option">自分以外の使用マスター
+          <!--マスター名,延べ試合数-->
+        </option>
+        <option data-t-head="card" data-t-body="otherCard" class="graph-selector--option">自分以外の使用カード
+        </option>
+        <option data-t-head="duration" data-t-body="duration" class="graph-selector--option">試合時間
+          <!--最短,最長,時間ごとの勝率-->
+        </option>
+        <option data-t-head="gameMode" data-t-body="gameMode" class="graph-selector--option">ゲームモード
+        </option>
+      </select>
+    </div>
+    <table id="summary-table" class="detail-table">
+      <thead>
+        <tr id="master-summary-thead" hidden>
+          <th class="detail-table--th">マスター</th>
+          <th class="detail-table--th">試合</th>
+          <th class="detail-table--th">勝率</th>
+          <th class="detail-table--th">勝</th>
+          <th class="detail-table--th">敗</th>
+        </tr>
+        <tr id="deck-summary-thead" hidden>
+          <th class="detail-table--th">マスター</th>
+          <th class="detail-table--th">デッキ</th>
+          <th class="detail-table--th">試合</th>
+          <th class="detail-table--th">勝率</th>
+          <th class="detail-table--th">勝</th>
+          <th class="detail-table--th">敗</th>
+        </tr>
+        <tr id="card-summary-thead" hidden>
+          <th class="detail-table--th">カード</th>
+          <!--th>延べ枚数</th-->
+          <th class="detail-table--th">試合</th>
+          <th class="detail-table--th">勝率</th>
+          <th class="detail-table--th">勝</th>
+          <th class="detail-table--th">敗</th>
+        </tr>
+        <tr id="duration-summary-thead" hidden>
+          <th class="detail-table--th">試合時間</th>
+          <th class="detail-table--th">試合</th>
+          <th class="detail-table--th">勝率</th>
+          <th class="detail-table--th">勝</th>
+          <th class="detail-table--th">敗</th>
+        </tr>
+        <tr id="game-mode-summary-thead" hidden>
+          <th class="detail-table--th">モード</th>
+          <th class="detail-table--th">試合</th>
+          <th class="detail-table--th">勝率</th>
+          <th class="detail-table--th">勝</th>
+          <th class="detail-table--th">敗</th>
+        </tr>
+    </table>
     <form name="filter" class="label">
       <table class="filter--table">
         <tr>
@@ -19,10 +90,10 @@
             <div class="fieldset">
               <label><input type="checkbox" name="gameMode1v1" hidden><span
                   class="checkbox-label button">1v1</span></label>
-              <label><input type="checkbox" name="gameMode2v2" hidden><span
-                  class="checkbox-label button">野良</span></label>
               <label><input type="checkbox" name="gameModePremade" hidden><span
                   class="checkbox-label button">プリメイド</span></label>
+              <label hidden><input type="checkbox" name="gameMode2v2" hidden><span
+                  class="checkbox-label button">野良</span></label>
               <label hidden><input type="checkbox" name="gameModeNPC" hidden checked><span
                   class="checkbox-label button">NPC</span></label>
             </div>
@@ -60,20 +131,30 @@
           </td>
       </table>
     </form>
-    <div>
-      <table id="replay-list" class="detail-table">
-        <thead id="replay-sorter" class="detail-table--thead">
-          <tr>
-            <th data-sort="time" class="sortable-th">日時</th>
-            <th data-sort="duration" class="sortable-th">試合時間</th>
-            <th data-sort="gameMode" class="sortable-th">モード</th>
-            <th data-sort="winTeamId" class="sortable-th">勝敗</th>
-            <th>プレイヤー</th>
-            <th>マスター</th>
-            <th>デッキ</th>
-          </tr>
-        </thead>
-      </table>
+    <div>      <table id="replay-list" class="detail-table">
+      <thead id="replay-sorter">
+        <tr>
+          <th data-sort="time" class="detail-table--th sortable-th">決着日時</th>
+          <th data-sort="duration" class="detail-table--th sortable-th">試合時間</th>
+          <th data-sort="gameMode" class="detail-table--th sortable-th">モード</th>
+          <th data-sort="winTeamId" class="detail-table--th sortable-th">勝敗</th>
+          <th class="detail-table--th">プレイヤー</th>
+          <th class="detail-table--th">マスター</th>
+          <th class="detail-table--th">デッキ</th>
+        </tr>
+      </thead>
+      <tfoot class="detail-table--tfoot">
+        <tr>
+          <td>
+          <td>
+          <td>
+          <td>
+          <td>
+          <td>
+          <td>
+        </tr>
+      </tfoot>
+    </table>
     </div>
   </div>
   <div class="loading-screen">ロード中</div>
@@ -97,12 +178,14 @@
   <div class="label">
     バグ・未実装など
     <ul>
+      <li>【致命的】一部のカード名が別のカードに置き換わってしまっています</li>
       <li>ゲームモード「野良」「NPC」判定ができてません</li>
       <li>「あなたの名前」を変更しても何も起こりません</li>
+      <li>フィルターの変更でスクロール位置が(正常動作ではありますが)ひどいことになります</li>
     </ul>
   </div>
   <footer class="center">created by <a href="https://twitter.com/tiramisu_oTATo" class="link">@tiramisu_oTATo</a>
-    (unofficial)</footer>
+    (unofficial)<br>If there are any problems, please contact me.(note: This tool is WIP)<br>問題があればご連絡ください(開発中のツールです)</footer>
   <datalist id="player-names">
     <option value="Chocolate">
     <option value="Coconut">

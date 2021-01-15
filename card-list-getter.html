@@ -10,13 +10,25 @@
 </head>
 
 <body>
+	<label>
+		データの特性上、カード名にカンマが入っているものは識別できないため、除外してあとから手入力するようにしてください
+	</label>
 	<label class="label">
 		カードID(/cidを改行区切り、マスターはそのまま、最初と最後は改行しない)<br />
 		<textarea id="cid" class="textarea">3 263 54 49 70 26 214 290 188 57 10</textarea>
 	</label>
 	<label class="label">
 		カードの名前(/cdを改行区切り、マスターはそのまま、最初と最後は改行しない)<br />
-		<textarea id="cd" class="textarea">Ravager: Arcane Ring, Blood Imps, Disruptor Puff, Heal Puff, Mana Puff, Squire Puff, Sugilite Shield, Arcane Bolt, Black Hole, Boomer</textarea>
+		<textarea id="cd"
+			class="textarea">Ravager: Arcane Ring, Blood Imps, Disruptor Puff, Heal Puff, Mana Puff, Squire Puff, Sugilite Shield, Arcane Bolt, Black Hole, Boomer</textarea>
+	</label>
+	<label class="label">
+		元JSON(任意)<br />
+		<textarea id="default-json" class="textarea">[
+			[272,"Ting, Teng & Tung"],
+			[275,"Jahun, Keeper of Jadespark"],
+			[299,"Mar'Dred, Prince of Nightmares"]
+]</textarea>
 	</label>
 	<label class="label">
 		結果 (<span id="card-count">0</span> 枚)<br />

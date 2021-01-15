@@ -287,6 +287,8 @@ input:checked+.button::after {
 
 .summary--child {
   border-right: solid 1px rgba(255, 255, 255, 0.2);
+  display: flex;
+  flex-direction: column;
   padding: 0 12px;
   margin: 0;
 }
@@ -298,6 +300,7 @@ input:checked+.button::after {
 }
 
 .win-rate {
+  align-self: flex-end;
   font-size: 500%;
   max-width: fit-content;
   position: relative;
@@ -432,13 +435,13 @@ input:checked+.button::after {
   min-width: max-content;
 }
 
-.detail-table--thead>tr>th {
+.detail-table--th {
   background-color: rgb(43, 54, 112);
   border-left: solid 2px rgba(0, 0, 0, 0.3);
   padding: 0 16px;
 }
 
-.detail-table--thead>tr>th:first-child {
+.detail-table--th:first-child {
   border-left: none;
 }
 
@@ -447,8 +450,7 @@ input:checked+.button::after {
   position: relative;
 }
 
-.sortable-th::before,
-.sortable-th::after {
+.sortable-th::before, .sortable-th::after {
   border: none 2px #eee;
   border-top-style: solid;
   border-right-style: solid;
@@ -461,8 +463,7 @@ input:checked+.button::after {
   width: 7px;
 }
 
-.sortable-th:hover:before,
-.sortable-th:hover:after {
+.sortable-th:hover::before, .sortable-th:hover::after {
   opacity: 0.9;
 }
 
@@ -476,25 +477,27 @@ input:checked+.button::after {
   transform: scaleX(0.5) rotate(-45deg);
 }
 
-.detail-table--tbody>tr>td {
-  border-left: solid 2px rgba(255, 255, 255, 0.1);
+.detail-table--td {
+  border-right: solid 2px rgba(255, 255, 255, 0.1);
   padding: 0 12px;
 }
 
-.detail-table--tbody>tr>td:first-child {
-  border-left: none;
+.td--left {
+  text-align: left;
 }
+
+/*
 
 .stripe-tbody>tr:nth-child(odd)>td {
   background-color: rgba(255, 255, 255, 0.1);
 }
-
 .master-table--tbody>tr>td:nth-child(2), .deck-table--tbody>tr>td:nth-child(3), .deck-table--tbody>tr>td:nth-child(4), .deck-table--tbody>tr>td:nth-child(5), .deck-table--tbody>tr>td:nth-child(6) {
   text-align: right;
 }
+*/
 
-.all-table--tbody {
-  border-top: solid 1px rgb(255, 255, 0, 0.2);
+.detail-table--tbody {
+  border-top: solid 1px #660;
   text-align: center;
   opacity: 0.8;
 }
@@ -504,53 +507,27 @@ input:checked+.button::after {
   opacity: 1;
 }
 
-.all-table--tbody>tr>td:nth-last-child(1) {
-  text-align: left;
-}
-
-.team-battle>tr:first-child>td:nth-last-child(1),
-.team-battle>tr:first-child>td:nth-last-child(2),
-.team-battle>tr:first-child>td:nth-last-child(3),
-.team-battle>tr:nth-child(2),
-.solo-battle>tr:first-child>td:nth-last-child(1),
-.solo-battle>tr:first-child>td:nth-last-child(2),
-.solo-battle>tr:first-child>td:nth-last-child(3),
-.win>tr:first-child>td:nth-child(4) {
+.ally {
   background-color: rgba(255, 255, 255, 0.05);
 }
 
-.you>td:nth-last-child(1),
-.you>td:nth-last-child(2),
-.you>td:nth-last-child(3),
-.win>.you>td:nth-last-child(4) {
-  background-color: rgba(255, 255, 255, 0.1) !important;
-}
-
-
-.team-battle>tr:first-child>td:nth-last-child(1),
-.team-battle>tr:first-child>td:nth-last-child(2),
-.team-battle>tr:first-child>td:nth-last-child(3) {
+.second-ally {
+  border-top: solid 1px rgb(0, 0, 0);
   border-bottom: solid 1px rgb(0, 0, 0);
+  background-color: rgba(255, 255, 255, 0.05);
 }
 
-.team-battle>tr:nth-child(3) {
+.you {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.detail-table--tr3 {
   border-bottom: solid 1px rgba(255, 255, 255, 0.2);
 }
-/*
-.lose-team-battle>tr:first-child>td:nth-last-child(1), .lose-team-battle>tr:first-child>td:nth-last-child(2), .lose-team-battle>tr:nth-child(2), .win-team-battle>tr:nth-child(3), .win-team-battle>tr:nth-child(4), .lose-solo-battle>tr:first-child>td:nth-last-child(1), .lose-solo-battle>tr:first-child>td:nth-last-child(2) {
-  background-color: rgba(255, 255, 255, 0.1);
-}
-*/
 
-/*
-.all-table--tbody>tr:first-child>td, .win-team-battle>tr:nth-child(2)>td, .lose-team-battle>tr:nth-child(3)>td, .lose-team-battle>tr:nth-child(4)>td {
-  background-color: rgba(255, 255, 255, 0.1);
+.detail-table--tfoot {
+  background-color: #660;
 }
-
-.lose-team-battle>tr:first-child>td:nth-last-child(1), .lose-team-battle>tr:first-child>td:nth-last-child(2), .lose-solo-battle>tr:first-child>td:nth-last-child(1), .lose-solo-battle>tr:first-child>td:nth-last-child(2) {
-  background-color: initial;
-}
-*/
 
 .spacer0 {
   visibility: hidden;
@@ -594,8 +571,7 @@ input:checked+.button::after {
   width: 80px;
 }
 
-.reload-image::before,
-.reload-image::after {
+.reload-image::before, .reload-image::after {
   content: "";
   position: absolute;
 }
@@ -629,4 +605,14 @@ input:checked+.button::after {
 
 .unmarkable {
   opacity: 0.3;
+}
+
+.number {
+  text-align: right;
+}
+
+.summary-td {
+  border-top: solid 1px #660;
+  border-right: solid 2px rgba(255, 255, 255, 0.1);
+  padding: 0 12px;
 }

@@ -1,36 +1,51 @@
 window.addEventListener("load", () => {
   "use strict";
-  const Const = Object.freeze({
-    EMPTY_STRING: Object.freeze(""),
-    EMPTY_ARRAY: Object.freeze([]),
-    EMPTY_OBJECT: Object.freeze({}),
-    LOCALE_FORMAT: Object.freeze({
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit"
+  const
+    Const = Object.freeze({
+      EMPTY_STRING: Object.freeze(""),
+      EMPTY_ARRAY: Object.freeze([]),
+      EMPTY_OBJECT: Object.freeze({}),
+      LOCALE_FORMAT: Object.freeze({
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit"
+      }),
+      WIN_STRING: "勝ち",
+      LOSE_STRING: "負け",
+      SORT_PRIOR_PROPERTY_NAME: "winTeamId",
+      YOU_EXIST_CLASS_NAME: "you",
+      ALLY_CLASS_NAME: "ally",
+      SECOND_ALLY_CLASS_NAME: "second-ally",
+      ADJACENT_POSITION: "beforeend",
+      INVISIBLE_ZERO: '<span class="spacer0">0</span>',
+      TEXT_ENCODE: "utf-8",
+      CSLogic_PlayerData: "CSLogic.PlayerData",
+      CSLogic_TeamMode: "CSLogic.TeamMode",
+      T_BODY_TAG_NAME: "tbody",
+      CARD_SEPARATOR: ' <span class="unmarkable">/</span> ',
+      ESCAPE_REGEXP: new RegExp(/<.+?>/)
     }),
-    TEAM_BATTLE_CLASS_NAME: "team-battle",
-    SOLO_BATTLE_CLASS_NAME: "solo-battle",
-    WIN_BATTLE_CLASS_NAME: "win",
-    LOSE_BATTLE_CLASS_NAME: "lose",
-    WIN_STRING: "勝ち",
-    LOSE_STRING: "負け",
-    SORT_PRIOR_PROPERTY_NAME: "winTeamId",
-    YOU_EXIST_CLASS: ' class="you"',
-    ADJACENT_POSITION: "beforeend",
-    INVISIBLE_ZERO: '<span class="spacer0">0</span>',
-    TEXT_ENCODE: "utf-8",
-    CSLogic_PlayerData: "CSLogic.PlayerData",
-    CSLogic_TeamMode: "CSLogic.TeamMode"
-  });
+    $id = (id) => document.getElementById(id),
+    $x = (number) => '0x' + number.toString(16).toUpperCase(),
+    $escape = (string) => string.replace(Const.ESCAPE_REGEXP, Const.EMPTY_STRING),
+    $sleep = (sec) => new Promise((resolve) => setTimeout(resolve, sec * 1000)),
+    // 長い処理の前にUIを更新したい場合、UIの更新前と処理の前に await $applicationOfUi();
+    $applicationOfUi = (async () => {
+      await new Promise(requestAnimationFrame);
+      // await Promise.resolve()じゃダメっぽいが、理解できてない
+      await $sleep(0);
+    });
 
   class NameGetter {
     #map;
     #defaultMapLikeArray;
-    constructor(defaultMapLikeArray) {
+    #dataList;
+    constructor(dataList, defaultMapLikeArray) {
+      this.#dataList = dataList;
       this.#defaultMapLikeArray = defaultMapLikeArray;
+      this.boundGet = this.get.bind(this);
     }
     get(id) {
       return this.#map?.get(id) ?? id;
@@ -39,228 +54,234 @@ window.addEventListener("load", () => {
       this.#map = mapLikeArray
         ? new Map([...this.#defaultMapLikeArray, ...mapLikeArray])
         : new Map(this.#defaultMapLikeArray);
+      if (this.#dataList)
+        this.#applyToDataList();
+    }
+    #applyToDataList() {
+      this.#dataList.innerHTML = '<option value="' + Array.from(this.#map.values()).sort().join('"><option value="') + '">';
     }
   }
 
-  const CardName = new NameGetter([
-    [0, "Caber Tosser"],
-    [1, "Warrior"],
-    [2, "Plasma Marines"],
-    [3, "Grenadier"],
-    [4, "Lightning Bolt"],
-    [5, "Living Statue"],
-    [6, "Dragon Whelp"],
-    [7, "Scrat Pack"],
-    [8, "Ghost Turret"],
-    [9, "Fireball"],
-    [10, "Boomer"],
-    [11, "Swarmers"],
-    [12, "Succubus"],
-    [13, "Swarmer Totem"],
-    [14, "Demon Warrior"],
-    [15, "Cannon Roller"],
-    [16, "Ghost"],
-    [17, "Howling Moon"],
-    [19, "Sniper Scrat"],
-    [20, "Soul Stealer"],
-    [21, "Bridge Shrine"],
-    [22, "Assassin"],
-    [23, "Blind Date"],
-    [24, "Divine Warrior"],
-    [25, "Scrat Horde"],
-    [26, "Mana Puff"],
-    [27, "Defenso Chopper"],
-    [28, "Banner Man"],
-    [29, "Healing Fireball"],
-    [30, "Shock Rock"],
-    [31, "Stun Blast"],
-    [32, "Toll of the Dead"],
-    [33, "Priestess"],
-    [34, "Re-Boomer"],
-    [35, "Troubadour"],
-    [36, "Bahra the Witchwolf"],
-    [37, "Laser Turret"],
-    [38, "Whirly Scrat"],
-    [39, "Illusory Cleaver"],
-    [40, "Shars'Rakk Twins"],
-    [41, "Snake Druid"],
-    [42, "Brother of the Burning Fist"],
-    [43, "Scrat Launcher"],
-    [44, "Drone Walker"],
-    [45, "Legionnaires"],
-    [46, "Fergus Flagon Fighter "],
-    [47, "Annihilator"],
-    [48, "Stun Lancers"],
-    [49, "Disruptor Puff"],
-    [50, "Dragon Nest"],
-    [51, "Cleaver"],
-    [52, "Future Past"],
-    [53, "Call To Arms"],
-    [54, "Blood Imps"],
-    [56, "Crossbow Dudes"],
-    [57, "Black Hole"],
-    [60, "Infiltration"],
-    [61, "Daggerfall"],
-    [62, "Bounty Sniper"],
-    [63, "Blastmancer"],
-    [64, "Slithering Summons"],
-    [65, "Gax the World Bomb"],
-    [66, "Rammer"],
-    [67, "Zeppelin Bomber"],
-    [68, "Beam of DOOM!"],
-    [69, "Rampage"],
-    [70, "Heal Puff"],
-    [71, "Jadespark Watchers"],
-    [72, "Scrat Tank"],
-    [73, "Raging Reinforcements"],
-    [74, "Wall"],
-    [76, "Spiritmancer"],
-    [77, "Undying Skeleton"],
-    [78, "Walking Blind Date"],
-    [79, "Propeller Scrats"],
-    [80, "Tranquil Shi-Hou"],
-    [81, "Battle Shi-Hou"],
-    [83, "Chain Lightning"],
-    [84, "Spear Throwers"],
-    [87, "Guardian"],
-    [90, "Spirit Vessel"],
-    [91, "Xiao Long"],
-    [93, "Bazooka Scrat"],
-    [96, "Hypnotize"],
-    [99, "Magma Storm"],
-    [100, "Spirit Infusion"],
-    [105, "Fire Imp"],
-    [106, "Crakgul Doomcleaver"],
-    [108, "Shielded Crossbow Dudes"],
-    [111, "Prowler"],
-    [112, "Elite Swarmer"],
-    [113, "S.T.INT"],
-    [114, "Drone Buzzers"],
-    [115, "\"Armored\" Scrats"],
-    [117, "Caeleth Dawnhammer"],
-    [119, "Woodsman"],
-    [122, "Healing Shrine"],
-    [123, "Combustion"],
-    [125, "Musketeer"],
-    [128, "Morgrul the Swarmer King"],
-    [129, "Scott The Sensitive Savage"],
-    [133, "Flightless Dragons"],
-    [135, "Gor'Rakk Sacrifice"],
-    [138, "Bridge Buddies"],
-    [139, "Cursebearer"],
-    [140, "Magma Cannon"],
-    [142, "Lost Legionnaires"],
-    [143, "Gambler's Ball"],
-    [149, "Ravenous Swarmers"],
-    [158, "Screaming Scrat"],
-    [161, "Future Present"],
-    [162, "Netherstep"],
-    [163, "Incubus"],
-    [164, "Brutish Betrayer"],
-    [169, "Lord Fanriel the Stormcharger"],
-    [170, "Dormant Defenders"],
-    [172, "A.I.M. Bot"],
-    [173, "Sniper Squad"],
-    [175, "Cheese Date"],
-    [178, "Sun Burn"],
-    [180, "Clear Skies"],
-    [182, "Nyrvir's Breath"],
-    [183, "Tantrum Throwers"],
-    [184, "Propeller Horde"],
-    [185, "Dragon Pack"],
-    [186, "Crystal Archers"],
-    [187, "Crystal Arcanist"],
-    [188, "Arcane Bolt"],
-    [191, "Crystal Sentry"],
-    [192, "Akinlep's Gong of Pestilence"],
-    [193, "Crystal Construct"],
-    [194, "Jahun"],
-    [195, "Mana Puff Madness"],
-    [196, "Wheel Of Doom"],
-    [197, "Nether Bat"],
-    [199, "Styxi"],
-    [201, "Once Bitten"],
-    [202, "Bats Bats Bats!"],
-    [203, "Grasping Thorns"],
-    [204, "Lone Wolf"],
-    [209, "Harbinger"],
-    [210, "Armored Escort"],
-    [211, "Last Stand"],
-    [212, "Void Altar"],
-    [214, "Squire Puff"],
-    [215, "Gor'Rakk Gate"],
-    [216, "Commander Azali"],
-    [218, "Morgrul's Ragers"],
-    [219, "Shadow Whelp"],
-    [220, "Wreckinator 9000"],
-    [221, "Stormy"],
-    [222, "Shen Stormstrike"],
-    [224, "Poison Strike"],
-    [226, "Jungle Jumble"],
-    [228, "Zap Shrine"],
-    [229, "Rabid Prowler"],
-    [234, "Skeleton Horde"],
-    [235, "Jolo the Hero Scrat"],
-    [236, "Mountainshaper"],
-    [237, "Teng & Tung"],
-    [238, "Lone Scout"],
-    [239, "Border Patrol"],
-    [240, "Haunting Hugger"],
-    [241, "Lord-Sentinel Thelec"],
-    [242, "Spawn of Fury"],
-    [249, "Slitherbound"],
-    [251, "Shieldguard Of Light"],
-    [252, "Caged Prowler"],
-    [253, "Shield-Captain Avea"],
-    [254, "Gor'Rakk Brutes"],
-    [255, "Sewer Scrat"],
-    [257, "Scratillery"],
-    [258, "Boom Buggy"],
-    [259, "Ritual of Servitude"],
-    [260, "Wizard Puff"],
-    [261, "High-Mage Leiliel"],
-    [262, "Leiliel's Vortex"],
-    [263, "Arcane Ring"],
-    [264, "Glenn's Brew"],
-    [265, "AtG Drone x8"],
-    [266, "Frostfeathers"],
-    [267, "Empowered Soul Stealer"],
-    [268, "High Inquisitor Ardera"],
-    [269, "Frostfeather Flyby"],
-    [270, "Mal'Shar Shadowfork"],
-    [271, "Jade Flingers"],
-    [272, "Ting"],
-    [273, "Dragon Ball"],
-    [274, "Blue Golem"],
-    [275, "Brothers Of Light"],
-    [276, "Colossus"],
-    [277, "Smite"],
-    [278, "Ardent Aegis"],
-    [279, "Windwalker Shi-Hou "],
-    [280, "Shen's Shock Stick"],
-    [285, "Wolf Among Sheep"],
-    [288, "Herald Ah'Mun"],
-    [289, "Crossbow Guild"],
-    [290, "Sugilite Shield"],
-    [291, "Restless Dead"],
-    [292, "Unholy Ground"],
-    [293, "Corpse Explosion"],
-    [294, "Skeleton Crew"],
-    [295, "Resonating Blast Crystal"],
-    [297, "Lady Infray the Spire Warden"],
-    [298, "Red Golem"],
-    [299, "Keeper of Jadespark"],
-    [300, "Illusory Dragon Whelp"],
-    [301, "Pincer of Dread"],
-    [302, "Brothers Of The Void"],
-    [303, "Groggy Woodsman"],
-    [305, "Mountain Gale"],
-    [306, "Rock Rivals"],
-    [312, "Zealots of the Burning Fist"],
-    [315, "Chain Gang"]
-  ]);
+  const CardName = new NameGetter($id("card-names"), [
+    [0,"Cleaver"],
+    [1,"Warrior"],
+    [2,"Plasma Marines"],
+    [3,"Grenadier"],
+    [4,"Lightning Bolt"],
+    [5,"Living Statue"],
+    [6,"Dragon Whelp"],
+    [7,"Scrat Pack"],
+    [8,"Ghost Turret"],
+    [9,"Fireball"],
+    [10,"Boomer"],
+    [11,"Swarmers"],
+    [12,"Succubus"],
+    [13,"Swarmer Totem"],
+    [14,"Demon Warrior"],
+    [15,"Cannon Roller"],
+    [16,"Ghost"],
+    [17,"Last Stand"],
+    [19,"Sniper Scrat"],
+    [20,"Soul Stealer"],
+    [21,"Bridge Shrine"],
+    [22,"Assassin"],
+    [23,"Blind Date"],
+    [24,"Divine Warrior"],
+    [25,"Scrat Horde"],
+    [26,"Mana Puff"],
+    [27,"Defenso Chopper"],
+    [28,"Banner Man"],
+    [29,"Healing Fireball"],
+    [30,"Shock Rock"],
+    [31,"Stun Blast"],
+    [32,"Wizard Puff"],
+    [33,"Priestess"],
+    [34,"Re-Boomer"],
+    [35,"Colossus"],
+    [36,"Beam of DOOM!"],
+    [37,"Laser Turret"],
+    [38,"Whirly Scrat"],
+    [39,"Illusory Cleaver"],
+    [40,"Troubadour"],
+    [41,"Snake Druid"],
+    [42,"Dragon Pack"],
+    [43,"Scrat Launcher"],
+    [44,"Drone Walker"],
+    [45,"Legionnaires"],
+    [46,"Harbinger"],
+    [47,"Annihilator"],
+    [48,"Stun Lancers"],
+    [49,"Disruptor Puff"],
+    [50,"Dragon Nest"],
+    [51,"Crossbow Guild"],
+    [52,"Future Past"],
+    [53,"Call To Arms"],
+    [54,"Blood Imps"],
+    [56,"Crossbow Dudes"],
+    [57,"Black Hole"],
+    [60,"Infiltration"],
+    [61,"Daggerfall"],
+    [62,"Bounty Sniper"],
+    [63,"Blastmancer"],
+    [64,"Styxi"],
+    [65,"Gax the World Bomb"],
+    [66,"Rammer"],
+    [67,"Zeppelin Bomber"],
+    [68,"Blue Golem"],
+    [69,"Rampage"],
+    [70,"Heal Puff"],
+    [71,"Red Golem"],
+    [72,"Scrat Tank"],
+    [73,"Raging Reinforcements"],
+    [74,"Wall"],
+    [76,"Spiritmancer"],
+    [77,"Undying Skeleton"],
+    [78,"Walking Blind Date"],
+    [79,"Propeller Scrats"],
+    [80,"Tranquil Shi-Hou"],
+    [81,"Battle Shi-Hou"],
+    [83,"Chain Lightning"],
+    [84,"Spear Throwers"],
+    [87,"Guardian"],
+    [90,"Spirit Vessel"],
+    [91,"Xiao Long"],
+    [93,"Bazooka Scrat"],
+    [96,"Hypnotize"],
+    [99,"Magma Storm"],
+    [100,"Spirit Infusion"],
+    [105,"Fire Imp"],
+    [106,"Future Present"],
+    [108,"Shielded Crossbow Dudes"],
+    [111,"Prowler"],
+    [112,"Elite Swarmer"],
+    [113,"S.T.INT"],
+    [114,"Drone Buzzers"],
+    [115,"\"Armored\" Scrats"],
+    [117,"Commander Azali"],
+    [119,"AtG Drone x8"],
+    [122,"Healing Shrine"],
+    [123,"Combustion"],
+    [125,"Musketeer"],
+    [128,"Morgrul the Swarmer King"],
+    [129,"Scott The Sensitive Savage"],
+    [133,"Flightless Dragons"],
+    [135,"Gor'Rakk Sacrifice"],
+    [138,"Bridge Buddies"],
+    [139,"Cursebearer"],
+    [140,"Magma Cannon"],
+    [142,"Lost Legionnaires"],
+    [143,"Gambler's Ball"],
+    [149,"Ravenous Swarmers"],
+    [158,"Screaming Scrat"],
+    [161,"Gor'Rakk Brutes"],
+    [162,"Netherstep"],
+    [163,"Incubus"],
+    [164,"Brutish Betrayer"],
+    [169,"Shars'Rakk Twins"],
+    [170,"Dragon Ball"],
+    [172,"A.I.M. Bot"],
+    [173,"Sniper Squad"],
+    [175,"Cheese Date"],
+    [178,"Sun Burn"],
+    [180,"Clear Skies"],
+    [182,"Rabid Prowler"],
+    [183,"Tantrum Throwers"],
+    [184,"Propeller Horde"],
+    [185,"Empowered Soul Stealer"],
+    [186,"Crystal Archers"],
+    [187,"Crystal Arcanist"],
+    [188,"Arcane Bolt"],
+    [191,"Crystal Sentry"],
+    [192,"Armored Escort"],
+    [193,"Crystal Construct"],
+    [194,"Lord-Sentinel Thelec"],
+    [195,"Mana Puff Madness"],
+    [196,"Wheel Of Doom"],
+    [197,"Nether Bat"],
+    [199,"Wolf Among Sheep"],
+    [201,"Once Bitten"],
+    [202,"Bats Bats Bats!"],
+    [203,"Grasping Thorns"],
+    [204,"Lone Wolf"],
+    [209,"Howling Moon"],
+    [210,"Bahra the Witchwolf"],
+    [211,"Shieldguard Of Light"],
+    [212,"Brothers Of Light"],
+    [214,"Squire Puff"],
+    [215,"Gor'Rakk Gate"],
+    [216,"Crakgul Doomcleaver"],
+    [218,"Morgrul's Ragers"],
+    [219,"Shadow Whelp"],
+    [220,"Caeleth Dawnhammer"],
+    [221,"Stormy"],
+    [222,"Shen Stormstrike"],
+    [224,"Poison Strike"],
+    [226,"Jungle Jumble"],
+    [228,"Zap Shrine"],
+    [229,"Rock Rivals"],
+    [234,"Skeleton Horde"],
+    [235,"Jolo the Hero Scrat"],
+    [236,"Nyrvir's Breath"],
+    [237,"Toll of the Dead"],
+    [238,"Lone Scout"],
+    [239,"Border Patrol"],
+    [240,"Haunting Hugger"],
+    [241,"Nyrvir the Fallen"],
+    [242,"Spawn of Fury"],
+    [249,"Slitherbound"],
+    [251,"Wreckinator 9000"],
+    [252,"Caged Prowler"],
+    [253,"Slithering Summons"],
+    [254,"Herald Ah'Mun"],
+    [255,"Sewer Scrat"],
+    [257,"Scratillery"],
+    [258,"Boom Buggy"],
+    [259,"Ritual of Servitude"],
+    [260,"Woodsman"],
+    [261,"High-Mage Leiliel"],
+    [262,"Leiliel's Vortex"],
+    [263,"Arcane Ring"],
+    [264,"Glenn's Brew"],
+    [265,"Caber Tosser"],
+    [266,"Frostfeathers"],
+    [267,"Fergus Flagon Fighter "],
+    [268,"Mountainshaper"],
+    [269,"Frostfeather Flyby"],
+    [270,"Mal'Shar Shadowfork"],
+    [271,"Jade Flingers"],
+    [272,"Ting, Teng & Tung"],
+    [273,"High Inquisitor Ardera"],
+    [274,"Brother of the Burning Fist"],
+    [275,"Jahun, Keeper of Jadespark"],
+    [276,"Jadespark Watchers"],
+    [277,"Smite"],
+    [278,"Ardent Aegis"],
+    [279,"Windwalker Shi-Hou "],
+    [280,"Shen's Shock Stick"],
+    [285,"Zealots of the Burning Fist"],
+    [288,"Lord Fanriel the Stormcharger"],
+    [289,"Dormant Defenders"],
+    [290,"Sugilite Shield"],
+    [291,"Restless Dead"],
+    [292,"Unholy Ground"],
+    [293,"Corpse Explosion"],
+    [294,"Skeleton Crew"],
+    [295,"Resonating Blast Crystal"],
+    [297,"Lady Infray the Spire Warden"],
+    [298,"Void Altar"],
+    [299,"Mar'Dred, Prince of Nightmares"],
+    [300,"Illusory Dragon Whelp"],
+    [301,"Pincer of Dread"],
+    [302,"Brothers Of The Void"],
+    [303,"Groggy Woodsman"],
+    [305,"Mountain Gale"],
+    [306,"Shield-Captain Avea"],
+    [312,"Akinlep's Gong of Pestilence"],
+    [315,"Chain Gang"]
+    ]
+  );
 
-  const MasterName = new NameGetter([
+  const MasterName = new NameGetter($id("master-names"), [
     [0, "Stormbringer"],
     [1, "Volco"],
     [2, "Mordar"],
@@ -275,7 +296,7 @@ window.addEventListener("load", () => {
     [12, "Valorian"]
   ]);
 
-  const GameModeName = new NameGetter([
+  const GameModeName = new NameGetter(null, [
     [0, "1v1"],
     [1, "プリメイド"],
     [2, "野良？"],
@@ -283,18 +304,33 @@ window.addEventListener("load", () => {
     [3, "NPC"]
   ]);
 
-  const
-    $id = (id) => document.getElementById(id),
-    $x = (number) => '0x' + number.toString(16).toUpperCase(),
-    $escapeRegExp = new RegExp(/<.+?>/),
-    $escape = (string) => string.replace($escapeRegExp, Const.EMPTY_STRING),
-    $sleep = (sec) => new Promise((resolve) => setTimeout(resolve, sec * 1000)),
-    // 長い処理の前にUIを更新したい場合、UIの更新前と処理の前に await $applicationOfUi();
-    $applicationOfUi = (async () => {
-      await new Promise(requestAnimationFrame);
-      // await Promise.resolve()じゃダメっぽいが、理解できてない
-      await $sleep(0);
-    });
+  // [1, 2] != [1, 2] とならないようにする
+  class ArrayPool {
+    #arrayPool = new Map();
+
+    get(array) {
+      let pool = this.#arrayPool;
+      for (const item of array) {
+        pool = this.#getOrCreate(pool, item);
+      }
+      return this.#getOrCreate(pool, "array", array);
+    }
+
+    #getOrCreate(map, key, array) {
+      if (map.has(key)) {
+        return map.get(key);
+      }
+      const newPool = array ?? new Map();
+      map.set(key, newPool);
+      return newPool;
+    }
+  }
+
+  const deckList = new ArrayPool();
+
+  const getWinsString = (matchesCount, winsCount) => (matchesCount === 0 && winsCount === 0)
+    ? "該当なし"
+    : `${winsCount} 勝${losesCount} 敗`;
 
   const Replay = (arrayBuffer) => {
     const
@@ -310,22 +346,22 @@ window.addEventListener("load", () => {
       time,
       date: new Date(time),
       winTeamId: dataView.getUint32(0x0395, true),
-      players: getPlayers(dataView, this.duration === 0),
+      players: getPlayers(dataView, this.duration === 0),/*
       graphFragments: [],
-      graphFragmentVisibilities: [],
+      graphFragmentVisibilities: [],*/
       // 後から追加するもの
       you: {},
-      tBody: document.createElement("tbody")
+      tBody: document.createElement(Const.T_BODY_TAG_NAME)
     });
   };
 
-  const getDeckString = (deck) => deck?.map(cardId => CardName.get(cardId)).sort().join(' <span class="unmarkable">/</span> ');
+  const getDeckString = (deck) => deck?.map(cardId => CardName.get(cardId)).sort().join(Const.CARD_SEPARATOR);
 
-  const findStringIndex = (dataView, string, startIndex = 0, count = 1) => {
-    let index = startIndex;
-    const viewLength = dataView.byteLength;
-    const firstCharCode = string.charCodeAt(0);
-    const stringLength = string.length;
+  const findStringIndex = (dataView, string, index = 0, count = 1) => {
+    const
+      viewLength = dataView.byteLength,
+      firstCharCode = string.charCodeAt(0),
+      stringLength = string.length;
     let countNumber = 0;
     while (index < viewLength) {
       if (dataView.getUint8(index++) !== firstCharCode)
@@ -342,36 +378,20 @@ window.addEventListener("load", () => {
     return -1;
   };
 
-  const findUint8ArrayIndex = (dataView, uint8Array, startIndex = 0, count = 1) => {
-    let index = startIndex;
-    const viewLength = dataView.byteLength;
-    const firstItem = uint8Array[0];
-    const arrayLength = uint8Array.length;
-    let countNumber = 0;
-    while (index < viewLength) {
-      if (dataView.getUint8(index++) !== firstItem)
-        continue;
-      for (let viewIndex = index, arrayIndex = 1; arrayIndex < arrayLength; viewIndex += 1) {
-        if (uint8Array[arrayIndex] !== dataView.getUint8(viewIndex))
-          break;
-        arrayIndex += 1;
-        if (arrayIndex === arrayLength && ++countNumber === count) {
-          return index - 1;
-        }
-      }
-    }
-    return -1;
-  };
-
   const getString = (buffer, byteOffset, length) => new TextDecoder(Const.TEXT_ENCODE).decode(
     new Uint8Array(buffer, byteOffset, length)
   );
 
   const getPlayers = (dataView) => {
     const players = [];
-    const isZeroDuration = (dataView.getUint8(0x0399, true) === 0x0A);
-    let targetAddress = findStringIndex(dataView, Const.CSLogic_PlayerData, isZeroDuration ? 0x987 : 0xA88);
-    let deckAddress = 0x1500;
+    const isZeroDuration = (dataView.getUint8(0x0399) === 0x0A);
+    let targetAddress = findTypedArray(dataView, 0x07, 0x00000007, 0x07E6);
+    const length1 = dataView.getUint32(targetAddress + 0x0A, true);
+    targetAddress = findStringIndex(dataView, Const.CSLogic_PlayerData, (isZeroDuration ? 0x987 : 0xA88) + length1 * 5);
+    let deckAddress = 0x1500 + length1 * 0x10;
+    if (!isZeroDuration) {
+      deckAddress += dataView.getUint32(targetAddress - 0x0E, true) * 5;
+    }
     let length = 0x588;
     const playerCount = dataView.getUint32(isZeroDuration ? 0x03A6 : 0x03AA, true);
     const player = {};
@@ -379,10 +399,10 @@ window.addEventListener("load", () => {
       targetAddress += length + 0x2B;
       player.masterId = dataView.getUint32(targetAddress, true);
       targetAddress += 0x05;
-      const old = deckAddress;
-      deckAddress = findUint8ArrayIndex(dataView, new Uint8Array([0x0F, ...new Uint8Array(dataView.buffer, targetAddress, 4)]), deckAddress);
-      console.log(`${i}:${deckAddress - old}`);
-      player.deck = Array.from({ length: dataView.getUint32(deckAddress + 0x05, true) }, (_, i) => dataView.getUint32(deckAddress + 0x0A + i * 0x04, true));
+      // const old = deckAddress;
+      deckAddress = findTypedArray(dataView, 0x0F, dataView.getUint32(targetAddress, true), deckAddress) + 0x05;
+      // console.log(`${i}:${deckAddress - old}`);
+      player.deck = constructDeckArray(dataView, deckAddress);
       targetAddress += 0x0D;
       length = dataView.getUint8(targetAddress);
       player.name = $escape(getString(dataView.buffer, targetAddress + 1, length));
@@ -403,32 +423,90 @@ window.addEventListener("load", () => {
     return players;
   };
 
-  const Player = (name, guildName, masterId, deck, team, rankId) => Object.freeze({ name, team, rankId, guildName, masterId, deck });
+  const Player = (name, guildName, masterId, deck, team, rankId) => Object.freeze({ name, team, rankId, guildName, masterId, deck: deckList.get(deck.sort()), uniqueDeck: new Set(deck) });
+
+  const findTypedArray = (() => {
+    const
+      buffer = new ArrayBuffer(5),
+      dataView = new DataView(buffer),
+      uint8Array = new Uint8Array(buffer);
+
+    return (dataView2, first, second, index = 0, count = 1) => {
+      dataView.setUint8(0, first);
+      dataView.setUint32(1, second, true);
+      const
+        viewLength = dataView2.byteLength,
+        firstItem = uint8Array[0],
+        arrayLength = uint8Array.length;
+      let countNumber = 0;
+      while (index < viewLength) {
+        if (dataView2.getUint8(index++) !== firstItem)
+          continue;
+        for (let viewIndex = index, arrayIndex = 1; arrayIndex < arrayLength; viewIndex += 1) {
+          if (uint8Array[arrayIndex] !== dataView2.getUint8(viewIndex))
+            break;
+          arrayIndex += 1;
+          if (arrayIndex === arrayLength && ++countNumber === count) {
+            return index - 1;
+          }
+        }
+      }
+      return -1;
+    };
+  })();
+
+  const constructDeckArray = (() => {
+    const arrayLikeObject = {
+      length: 0
+    };
+    let
+      deckAddress,
+      dataView;
+
+    const getItem = (_, i) => {
+      return dataView.getUint32(deckAddress + i * 0x04, true);
+    };
+
+    return (_dataView, _deckAddress) => {
+      dataView = _dataView;
+      deckAddress = _deckAddress;
+      arrayLikeObject.length = dataView.getUint32(deckAddress, true);
+      deckAddress += 0x05;
+      return Array.from(arrayLikeObject, getItem);
+    };
+  })();
 
   class ReplayManager {
-    static sort = (async () => {
+    static sort = (async (appliesFilter = true) => {
       if (this.#isSorting)
         return;
       this.#isSorting = true;
       ReplayTable.setReady(false);
       await $applicationOfUi();
       UIManager.constructFilterProperties();
-      await Promise.all([new Promise(this.#sort), $sleep(0.1)]);
+      await Promise.all([new Promise(appliesFilter ? this.#filter : this.#sort), $sleep(0.1)]);
       ReplayTable.setReady(true);
       this.#isSorting = false;
     }).bind(this);
 
-
     static #replays;
     static #replaysCount;
+    static #replayCounters;
+    static #visibleReplaysCount;
+    static #winCount;
     static #playerNameCounter;
     static #fileInputElement = $id("replay-directory");
     static #loadProggressBar = $id("progress");
+    // TODO UIManager側でソート中判定をやらないと、
+    // ソート処理中に同じ列を連続してクリックした場合に昇順・降順がおかしくなる
     static #isSorting = false;
     static #isLoading = false;
     static #replayRegExp = /[.]rp$/;
     static #settingFileName = /[/]replay-analyzer.json/;
     static #yourName = Const.EMPTY_STRING;
+    // 以下ソート用
+    static #currentReplay;
+    static #you;
 
     static #addReplay = ((binary) => {
       const replay = Replay(binary);
@@ -437,23 +515,21 @@ window.addEventListener("load", () => {
     }).bind(this);
 
     static #sort = ((resolve) => {
-      Array.from(this.#replays)
-        .filter(this.#filterFunc)
+      this.#replays
         .sort(this.#sortFunc)
-        .forEach(ReplayTable.addReplay);
+        .forEach(ReplayTable.addReplay, ReplayTable);
       resolve();
     }).bind(this);
 
-    static #filterFunc = ((replay) => {
-      for (const filterProperty of UIManager.filterProperties) {
-        if (filterProperty.test(replay)) {
-          continue;
-        }
-        replay.tBody.hidden = true;
-        return false;
-      }
-      replay.tBody.hidden = false;
-      return true;
+    static #filter = ((resolve) => {
+      this.#replayCounters = new ReplayCounterManager();
+      this.#replays
+        .filter(this.#filterFunc, this)
+        .sort(this.#sortFunc)
+        .forEach(ReplayTable.addReplay, ReplayTable);
+      this.#replayCounters.applyToSummary();
+      UIManager.triggerSummarySelectorChange();
+      resolve();
     }).bind(this);
 
     static #init = this.#initialize();
@@ -462,7 +538,21 @@ window.addEventListener("load", () => {
       this.#fileInputElement.addEventListener("change", this.#onFileChange);
     }
 
+    static #filterFunc(replay) {
+      for (const filterProperty of UIManager.filterProperties) {
+        if (filterProperty.test(replay)) {
+          continue;
+        }
+        replay.tBody.hidden = true;
+        return false;
+      }
+      this.#replayCounters.count(replay);
+      replay.tBody.hidden = false;
+      return true;
+    }
+
     static #sortFunc(replay, b) {
+      // 分割代入してもしなくても速度にそこまで差はなさそうなので、する方を採用
       for (const [propertyName, isAscend] of UIManager.sortPriorities) {
         if (propertyName === Const.SORT_PRIOR_PROPERTY_NAME) {
           if (replay.you.exists !== b.you.exists) {
@@ -484,12 +574,14 @@ window.addEventListener("load", () => {
     }
 
     static async #load() {
-      if (this.#isLoading)
+      if (this.#isLoading || this.#fileInputElement.value === Const.EMPTY_STRING)
         return;
+      CountUpTimer.start(true);
       this.#isLoading = true;
       ResultDiv.setReady(false);
+      CountUpTimer.lap();
       await $applicationOfUi();
-      CountUpTimer.start(true);
+      CountUpTimer.lap();
       this.#replays = new Set();
       this.#replaysCount = 0;
       this.#playerNameCounter = new Counter();
@@ -520,16 +612,14 @@ window.addEventListener("load", () => {
       promises.add(ReplayTable.clear());
       CountUpTimer.lap();
       await Promise.all(promises);
+      this.#replays = Array.from(this.#replays);
       CountUpTimer.lap();
-      this.#yourName = this.#playerNameCounter.max();
-      UIManager.setFilterValue(this.#yourName, "name");
-      for (const replay of this.#replays) {
-        const you = replay.players.find((player) => player.name === this.#yourName);
-        replay.you.exists = you !== undefined;
-        replay.you.areTheWinner = (replay.winTeamId === you?.team ?? 0);
-        this.#createTBody(replay);
-      }
-      await this.sort();
+      this.#changeYourName(this.#playerNameCounter.max());
+      CountUpTimer.lap();
+      $id("player-names").innerHTML = '<option value="' + Array.from(this.#playerNameCounter.result.keys()).sort().join('"><option value="') + '">';
+      CountUpTimer.lap();
+      this.sort();
+      CountUpTimer.lap();
       ResultDiv.setReady(true);
       console.log(`${this.#replaysCount}試合のリプレイの読み込みが完了しました`);
       CountUpTimer.lap();
@@ -548,48 +638,76 @@ window.addEventListener("load", () => {
       }
     }
 
+    static #changeYourName(name) {
+      this.#yourName = name;
+      UIManager.setFilterValue(name, "name");
+      for (const replay of this.#replays) {
+        const you = replay.players.find(this.#nameComparer, this);
+        replay.you.exists = you !== undefined;
+        replay.you.areTheWinner = replay.winTeamId === (you?.team ?? 0);
+        ReplayManager.#currentReplay = replay;
+        ReplayManager.#you = you;
+        replay.players.sort(this.#playerSortFunc);
+        this.#createTBody(replay);
+      }
+      ReplayManager.#currentReplay = null;
+      ReplayManager.#you = null;
+    }
+
+    static #playerSortFunc(player1, _player2) {
+      return ReplayManager.#you === undefined ? (
+        player1.team === ReplayManager.#currentReplay.winTeamId ? -1 : 0
+      )
+        : player1 === ReplayManager.#you ? -1 : player1.team === ReplayManager.#you.team ? -1 : 0
+    }
+
+    static #nameComparer(player) {
+      return player.name === this.#yourName;
+    }
+
     static #createTBody(replay) {
       const
         tBody = replay.tBody,
         isTeamBattle = replay.players.length === 4,
         seconds = ((BigInt(replay.duration) % 600n) / 10n).toString(),
         durationString = `${BigInt(replay.duration) / 600n}:${"0".repeat(2 - seconds.length)}${seconds}`,
-        you = replay.players.find((player) => player.name === this.#yourName),
-        isWinner = replay.winTeamId === (you?.team ?? 0),
-        players = (you === undefined) ? replay.players : replay.players.sort((player1, _player2) =>
-          player1 === you ? -1 : player1.team === you.team ? -1 : 0
-        );
+        isWinner = replay.you.areTheWinner,
+        isYou = replay.you.exists,
+        players = replay.players;
 
-      tBody.className = `detail-table--tbody all-table--tbody ${isTeamBattle ? Const.TEAM_BATTLE_CLASS_NAME : Const.SOLO_BATTLE_CLASS_NAME} ${isWinner ? Const.WIN_BATTLE_CLASS_NAME : Const.LOSE_BATTLE_CLASS_NAME}`;
-      tBody.insertAdjacentHTML(Const.ADJACENT_POSITION, `<tr${players[0] === you ? Const.YOU_EXIST_CLASS : Const.EMPTY_STRING}>
-            <td rowspan="4">${new Intl.DateTimeFormat(Const.EMPTY_ARRAY, Const.LOCALE_FORMAT).format(replay.date)}</td>
-            <td rowspan="4">${durationString.length <= 4 ? Const.INVISIBLE_ZERO : Const.EMPTY_STRING}${durationString}</td>
-            <td rowspan="4">${GameModeName.get(replay.gameMode)}</td>
-            <td rowspan="4">${(you === undefined) ? Const.EMPTY_STRING : isWinner ? Const.WIN_STRING : Const.LOSE_STRING}</td>
-            <td${players[0]?.name ? Const.EMPTY_STRING : ' class="invalid"'}>${players[0]?.name}</td>
-            <td>${MasterName.get(players[0]?.masterId)}</td>
-            <td>${getDeckString(players[0]?.deck) ?? "エラーなし"}</td>
+      tBody.className = `detail-table--tbody all-table--tbody`;
+      tBody.insertAdjacentHTML(Const.ADJACENT_POSITION, `<tr>
+            <td rowspan="4" class="detail-table--td">${new Intl.DateTimeFormat(Const.EMPTY_ARRAY, Const.LOCALE_FORMAT).format(replay.date)}</td>
+            <td rowspan="4" class="detail-table--td">${durationString.length <= 4 ? Const.INVISIBLE_ZERO : Const.EMPTY_STRING}${durationString}</td>
+            <td rowspan="4" class="detail-table--td">${GameModeName.get(replay.gameMode)}</td>
+            <td rowspan="4" class="detail-table--td ${!isWinner ? Const.EMPTY_STRING : isYou ? Const.YOU_EXIST_CLASS_NAME : Const.ALLY_CLASS_NAME}">${!isYou ? Const.EMPTY_STRING : isWinner ? Const.WIN_STRING : Const.LOSE_STRING}</td>
+            <td class="detail-table--td ${!players[0]?.name ? "invalid" : isYou ? Const.YOU_EXIST_CLASS_NAME : Const.ALLY_CLASS_NAME}">${players[0]?.name}</td>
+            <td class="detail-table--td ${isYou ? Const.YOU_EXIST_CLASS_NAME : Const.ALLY_CLASS_NAME}">${MasterName.get(players[0]?.masterId)}</td>
+            <td class="detail-table--td td--left ${isYou ? Const.YOU_EXIST_CLASS_NAME : Const.ALLY_CLASS_NAME}">${getDeckString(players[0]?.deck) ?? "エラー"}</td>
           </tr>
-          <tr>
-            <td${players[1]?.name ? Const.EMPTY_STRING : ' class="invalid"'}>${players[1]?.name}</td>
-            <td>${MasterName.get(players[1]?.masterId)}</td>
-            <td>${getDeckString(players[1]?.deck) ?? "エラーなし"}</td>
+          <tr class="${isTeamBattle ? Const.SECOND_ALLY_CLASS_NAME : Const.EMPTY_STRING}">
+            <td class="detail-table--td${players[1]?.name ? Const.EMPTY_STRING : " invalid"}">${players[1]?.name}</td>
+            <td class="detail-table--td">${MasterName.get(players[1]?.masterId)}</td>
+            <td class="detail-table--td td--left">${getDeckString(players[1]?.deck) ?? "エラー"}</td>
           </tr>${isTeamBattle ? `
-          <tr>
-            <td${players[2]?.name ? Const.EMPTY_STRING : ' class="invalid"'}>${players[2]?.name}</td>
-            <td>${MasterName.get(players[2]?.masterId)}</td>
-            <td>${getDeckString(players[2]?.deck) ?? "エラーなし"}</td>
+          <tr class="detail-table--tr3">
+            <td class="detail-table--td${players[2]?.name ? Const.EMPTY_STRING : " invalid"}">${players[2]?.name}</td>
+            <td class="detail-table--td">${MasterName.get(players[2]?.masterId)}</td>
+            <td class="detail-table--td td--left">${getDeckString(players[2]?.deck) ?? "エラー"}</td>
           </tr>
           <tr>
-            <td${players[3]?.name ? Const.EMPTY_STRING : ' class="invalid"'}>${players[3]?.name}</td>
-            <td>${MasterName.get(players[3]?.masterId)}</td>
-            <td>${getDeckString(players[3]?.deck) ?? "エラーなし"}</td>
+            <td class="detail-table--td${players[3]?.name ? Const.EMPTY_STRING : " invalid"}">${players[3]?.name}</td>
+            <td class="detail-table--td">${MasterName.get(players[3]?.masterId)}</td>
+            <td class="detail-table--td td--left">${getDeckString(players[3]?.deck) ?? "エラー"}</td>
           </tr>` : Const.EMPTY_STRING}`);
     }
   }
 
   class Counter {
     #counter = new Map();
+    get result() {
+      return this.#counter;
+    }
 
     count(array, propertyName) {
       for (const value of array) {
@@ -615,11 +733,14 @@ window.addEventListener("load", () => {
     #map;
     #arrayCache;
     #lastPropertyName;
+
+
     constructor(array) {
       this.#map = new Map(array);
       this.#arrayCache = [...this.#map.entries()].reverse();
       this.#lastPropertyName = this.#arrayCache[0] ? this.#arrayCache[0][0] : undefined;
     }
+
     set(propertyName) {
       // 連続で2回選択した時のみ昇順に
       const isAscend = (this.#lastPropertyName === propertyName) && !this.#map.get(propertyName);
@@ -628,99 +749,13 @@ window.addEventListener("load", () => {
       this.#arrayCache = [...this.#map.entries()].reverse();
       this.#lastPropertyName = propertyName;
     }
+
     [Symbol.iterator]() {
       return this.#arrayCache.values();
     }
   }
 
   class UIManager {
-    static #filterProperties = new Set();
-    static get filterProperties() {
-      return this.#filterProperties;
-    }
-
-    static #sortProperties = new SortPropertyStack([["time", false]]);
-    static get sortPriorities() {
-      return this.#sortProperties;
-    }
-
-    static #filterElementOf = {
-      filter: document.filter,
-      name: filter.yourName,
-      you: filter.you,
-      gameMode1v1: filter.gameMode1v1,
-      gameMode2v2: filter.gameMode2v2,
-      gameModePremade: filter.gameModePremade,
-      gameModeNPC: filter.gameModeNPC,/*
-      players: new Set(),
-      playerNameList: $id("player-name"),
-      playerAdditionButton: $id("filter-player-add"),
-      cards: new Set(),
-      cardList: $id("card-name"),
-      cardAdditionButton: $id("filter-card-add"),*/
-      durationGreaterThanMin: filter.gtMins,
-      durationGreaterThanSec: filter.gtSecs,
-      durationLessThanMin: filter.ltMins,
-      durationLessThanSec: filter.ltSecs,
-      fromDate: filter.fromDate,
-      fromTime: filter.fromTime,
-      toDate: filter.toDate,
-      toTime: filter.toTime,
-      sorter: $id("replay-sorter")
-    };
-    //static #filterOptionTemplate = $id("filter-option");
-    static #init = this.#initialize();
-
-    static #initialize() {
-      this.#filterElementOf.sorter.addEventListener("click", (e) => {
-        const propertyName = e.target.dataset.sort;
-        if (propertyName === undefined)
-          return;
-        this.#sortProperties.set(propertyName);
-        ReplayManager.sort();
-      });
-      for (const radio of this.#filterElementOf.you)
-        radio.addEventListener("change", ReplayManager.sort);
-      for (const textInputName of [
-        "name",
-        "durationGreaterThanMin",
-        "durationGreaterThanSec",
-        "durationLessThanMin",
-        "durationLessThanSec",
-        "fromDate",
-        "fromTime",
-        "toDate",
-        "toTime"
-      ]) {
-        const element = this.#filterElementOf[textInputName];
-        element.dataset.defaultValue = element.value ?? "";
-        element.addEventListener("change", ReplayManager.sort);
-        element.addEventListener("click", this.#select);
-        element.addEventListener("dblclick", this.#onTextInputDoubleClick);
-      }
-      for (const gameModeCheckboxName of [
-        "gameMode1v1",
-        "gameMode2v2",
-        "gameModePremade",
-        "gameModeNPC"
-      ]) {
-        this.#filterElementOf[gameModeCheckboxName].addEventListener("change", ReplayManager.sort);
-      }
-    }
-
-    static #select(e) {
-      e.target.select();
-    }
-
-    static #onTextInputDoubleClick(e) {
-      const target = e.target;
-      target.value = target.dataset.defaultValue;
-    }
-
-    static #getWinsString(winsCount, losesCount) {
-      return (winsCount === 0 && losesCount === 0) ? "該当なし" : `${winsCount} 勝${losesCount} 敗`
-    }
-
     static constructFilterProperties() {
       this.#filterProperties = new Set();
       let element = this.#filterElementOf.you;
@@ -759,7 +794,165 @@ window.addEventListener("load", () => {
     static setFilterValue(value, propertyName) {
       this.#filterElementOf[propertyName].value = value;
     }
+
+    static setMatchCountAndWinRate(matchCount, winCount, loseCount) {
+      this.#indicatorElementOf.matchCount.textContent = matchCount.toString();
+      this.#indicatorElementOf.wins.textContent = winCount;
+      this.#indicatorElementOf.loses.textContent = loseCount;
+      const winRatePerMilleString = Math.round(winCount * 1000 / (winCount + loseCount)).toString();
+      this.#indicatorElementOf.winRateInteger.textContent = winRatePerMilleString.length === 1 ? "0" : winRatePerMilleString.slice(0, -1);
+      this.#indicatorElementOf.winRateDecimal.textContent = winRatePerMilleString.charAt(winRatePerMilleString.length - 1);
+    }
+
+    static applySummary(yourDeck, yourCard, otherMaster, otherCard, duration, gameMode) {
+      const
+        elementOf = this.#indicatorElementOf,
+        table = elementOf.summaryTable;
+      for (const tBody of table.tBodies)
+        table.removeChild(tBody);
+      const
+        fragment = document.createDocumentFragment(),
+        tBody = elementOf.summaryTBody;
+      tBody.yourMaster = yourDeck.toTBody();
+      tBody.yourDeck = yourDeck.toTBody(true);
+      tBody.yourCard = yourCard.toTBody();
+      tBody.otherMaster = otherMaster.toTBody();
+      tBody.otherCard = otherCard.toTBody();
+      tBody.duration = duration.toTBody();
+      tBody.gameMode = gameMode.toTBody();
+      fragment.append(
+        tBody.yourMaster, tBody.yourDeck, tBody.yourCard,
+        tBody.otherMaster, tBody.otherCard, tBody.duration, tBody.gameMode
+      );
+      table.appendChild(fragment);
+    }
+
+    static triggerSummarySelectorChange() {
+      this.#indicatorElementOf.summarySelector.dispatchEvent(this.#changeEvent);
+    }
+
+    static #filterProperties = new Set();
+    static get filterProperties() {
+      return this.#filterProperties;
+    }
+
+    static #sortProperties = new SortPropertyStack([["time", false]]);
+    static get sortPriorities() {
+      return this.#sortProperties;
+    }
+
+    static #filterElementOf = Object.freeze({
+      filter: document.filter,
+      name: filter.yourName,
+      you: filter.you,
+      gameMode1v1: filter.gameMode1v1,
+      gameMode2v2: filter.gameMode2v2,
+      gameModePremade: filter.gameModePremade,
+      gameModeNPC: filter.gameModeNPC,/*
+      players: new Set(),
+      playerNameList: $id("player-name"),
+      playerAdditionButton: $id("filter-player-add"),
+      cards: new Set(),
+      cardList: $id("card-name"),
+      cardAdditionButton: $id("filter-card-add"),*/
+      durationGreaterThanMin: filter.gtMins,
+      durationGreaterThanSec: filter.gtSecs,
+      durationLessThanMin: filter.ltMins,
+      durationLessThanSec: filter.ltSecs,
+      fromDate: filter.fromDate,
+      fromTime: filter.fromTime,
+      toDate: filter.toDate,
+      toTime: filter.toTime/*,
+      sorter: $id("replay-sorter")*/
+    });
+    static #indicatorElementOf = Object.freeze({
+      matchCount: $id("match-count"),
+      wins: $id("wins"),
+      loses: $id("loses"),
+      winRateInteger: $id("win-rate-integer"),
+      winRateDecimal: $id("win-rate-decimal"),
+      summarySelector: $id("summary-selector"),
+      summaryTable: $id("summary-table"),
+      summaryTHead: {
+        master: $id("master-summary-thead"),
+        deck: $id("deck-summary-thead"),
+        card: $id("card-summary-thead"),
+        duration: $id("duration-summary-thead"),
+        gameMode: $id("game-mode-summary-thead"),
+        current: null
+      },
+      summaryTBody: {
+        current: null
+      }
+    });
+    //static #filterOptionTemplate = $id("filter-option");
+    static #changeEvent = new Event("change");
+    static #init = this.#initialize();
+
+    static #initialize() {
+      $id("replay-sorter").addEventListener("click", (e) => {
+        const propertyName = e.target.dataset.sort;
+        if (propertyName === undefined)
+          return;
+        this.#sortProperties.set(propertyName);
+        ReplayManager.sort(false);
+      });
+      this.#indicatorElementOf.summarySelector.addEventListener("change", (e) => {
+        const
+          target = e.target,
+          dataset = target.options[target.selectedIndex].dataset,
+          tHead = this.#indicatorElementOf.summaryTHead;
+        if (tHead.current !== null)
+          tHead.current.hidden = true;
+        tHead.current = tHead[dataset.tHead];
+        tHead.current.hidden = false;
+        const tBody = this.#indicatorElementOf.summaryTBody;
+        if (tBody.current !== null)
+          tBody.current.hidden = true;
+        tBody.current = tBody[dataset.tBody];
+        tBody.current.hidden = false;
+      });
+      for (const radio of this.#filterElementOf.you)
+        radio.addEventListener("change", ReplayManager.sort);
+      for (const textInputName of [
+        "name",
+        "durationGreaterThanMin",
+        "durationGreaterThanSec",
+        "durationLessThanMin",
+        "durationLessThanSec",
+        "fromDate",
+        "fromTime",
+        "toDate",
+        "toTime"
+      ]) {
+        const element = this.#filterElementOf[textInputName];
+        element.dataset.defaultValue = element.value ?? Const.EMPTY_STRING;
+        element.addEventListener("change", ReplayManager.sort);
+        element.addEventListener("click", this.#select);
+        element.addEventListener("dblclick", this.#onTextInputDoubleClick);
+      }
+      for (const gameModeCheckboxName of [
+        "gameMode1v1",
+        "gameMode2v2",
+        "gameModePremade",
+        "gameModeNPC"
+      ]) {
+        this.#filterElementOf[gameModeCheckboxName].addEventListener("change", ReplayManager.sort);
+      }
+    }
+
+    static #select(e) {
+      e.target.select();
+    }
+
+    static #onTextInputDoubleClick(e) {
+      const target = e.target;
+      target.value = target.dataset.defaultValue;
+      target.blur();
+      ReplayManager.sort();
+    }
   }
+
   /*
   class Graph {
     static #element = $id("graph");
@@ -776,6 +969,183 @@ window.addEventListener("load", () => {
     }
   }
   */
+
+  class ReplayCounter {
+    constructor(toString, subToString) {
+      this.#toString = toString;
+      this.#subToString = subToString;
+    }
+
+    get result() {
+      return this.#counter;
+    }
+
+    count(property, isWin, subProperty) {
+      this.#checkSubProperty(subProperty);
+      if (!this.#counter.has(property)) {
+        this.#addNewProperty(property, isWin, subProperty);
+        return;
+      }
+      this.#countMatchAndWin(property, isWin, subProperty);
+    }
+
+    countAll(iterable, isWin, subProperty) {
+      for (const item of iterable) {
+        this.count(item, isWin, subProperty);
+      }
+    }
+
+    toTBody(isSubCategory) {
+      const tBody = document.createElement("tbody");
+      tBody.hidden = true;
+      tBody.innerHTML = '<tr>' + ((this.#hasSubProperty && isSubCategory)
+        ? Array.from(this.#counter).flatMap(this.#flatMapFunc, this).sort(this.#sortFunc2).map(this.#mapFunc2, this).join('<tr>')
+        : Array.from(this.#counter).sort(this.#sortFunc).map(this.#mapFunc, this).join('<tr>'));
+      return tBody;
+    }
+
+    #counter = new Map();
+    #hasSubProperty;
+    #toString;
+    #subToString;
+    #flatMapKey;
+
+    #sortFunc(count, b) {
+      return b[1].matchCount - count[1].matchCount;
+    }
+
+    #mapFunc(item) {
+      return `<td class="summary-td">${this.#toString ? this.#toString(item[0]) : item[0]}</td>
+      <td class="summary-td number">${item[1].matchCount}</td>
+      <td class="summary-td number">${(item[1].winCount * 100 / item[1].matchCount).toFixed(1)}%</td>
+      <td class="summary-td number">${item[1].winCount}</td>
+      <td class="summary-td number">${item[1].matchCount - item[1].winCount}</td>`;
+    }
+
+    #flatMapFunc(item) {
+      this.#flatMapKey = item[0];
+      return Array.from(item[1].subCounter.result).map(this.#mapFunc3, this);
+    }
+
+    #mapFunc3(item) {
+      return {
+        key1: this.#flatMapKey,
+        key2: item[0],
+        value: item[1]
+      };
+    }
+
+    #sortFunc2(count, b) {
+      return b.value.matchCount - count.value.matchCount;
+    }
+
+    #mapFunc2(item) {
+      return `<td class="summary-td">${this.#toString ? this.#toString(item.key1) : item.key1}</td>
+        <td class="summary-td">${this.#subToString ? this.#subToString(item.key2) : item.key2}</td>
+        <td class="summary-td number">${item.value.matchCount}</td>
+        <td class="summary-td number">${(item.value.winCount * 100 / item.value.matchCount).toFixed(1)}%</td>
+        <td class="summary-td number">${item.value.winCount}</td>
+        <td class="summary-td number">${item.value.matchCount - item.value.winCount}</td>`;
+    }
+
+    #checkSubProperty(hasSubProperty) {
+      switch (this.#hasSubProperty) {
+        case undefined:
+          this.#hasSubProperty = hasSubProperty;
+          break;
+        case true:
+          if (!hasSubProperty)
+            throw "サブプロパティを指定してください";
+          break;
+        case false:
+          if (hasSubProperty)
+            throw "サブプロパティは指定できません";
+          break;
+      }
+    }
+
+    #addNewProperty(property, isWin, subProperty) {
+      if (subProperty === undefined) {
+        this.#counter.set(property, { matchCount: 1, winCount: isWin ? 1 : 0 });
+        return;
+      }
+      const subCounter = new ReplayCounter();
+      subCounter.#addNewProperty(subProperty, isWin);
+      this.#counter.set(property, { subCounter, matchCount: 1, winCount: isWin ? 1 : 0 });
+    }
+
+    #countMatchAndWin(property, isWin, subProperty) {
+      const item = this.#counter.get(property);
+      item.matchCount += 1;
+      if (isWin) {
+        item.winCount += 1;
+      }
+      if (subProperty !== undefined) {
+        item.subCounter.count(subProperty, isWin);
+      }
+    }
+  }
+
+  class ReplayCounterManager {
+    #yourDeck;
+    #yourCard;
+    #otherMaster;
+    #otherCard;
+    #duration;
+    #gameMode;
+    #matchCount;
+    #winCount;
+    #loseCount;
+    constructor() {
+      this.#yourDeck = new ReplayCounter(MasterName.boundGet, getDeckString);
+      this.#yourCard = new ReplayCounter(CardName.boundGet);
+      this.#otherMaster = new ReplayCounter(MasterName.boundGet);
+      this.#otherCard = new ReplayCounter(CardName.boundGet);
+      this.#duration = new ReplayCounter(ReplayCounterManager.#durationToString);
+      this.#gameMode = new ReplayCounter(GameModeName.boundGet);
+      this.#matchCount = 0;
+      this.#winCount = 0;
+      this.#loseCount = 0;
+    }
+
+    count(replay) {
+      // TODO ワイルドカードの延べ枚数
+      this.#matchCount += 1;
+      let i = 0;
+      for (const player of replay.players) {
+        if (i === 0 && replay.you.exists) {
+          this.#yourDeck.count(player.masterId, replay.you.areTheWinner, player.deck);
+          this.#yourCard.countAll(player.uniqueDeck, replay.you.areTheWinner);
+        }
+        else {
+          this.#otherMaster.count(player.masterId, replay.winTeamId === player.team);
+          this.#otherCard.countAll(player.uniqueDeck, replay.winTeamId === player.team);
+        }
+        i += 1;
+      }
+      if (!replay.you.exists)
+        return;
+      this.#duration.count(replay.duration - replay.duration % 600, replay.you.areTheWinner);
+      this.#gameMode.count(replay.gameMode, replay.you.areTheWinner);
+      if (replay.you.areTheWinner)
+        this.#winCount += 1;
+      else
+        this.#loseCount += 1;
+    }
+
+    applyToSummary() {
+      UIManager.setMatchCountAndWinRate(this.#matchCount, this.#winCount, this.#loseCount);
+      UIManager.applySummary(
+        this.#yourDeck, this.#yourCard,
+        this.#otherMaster, this.#otherCard, this.#duration, this.#gameMode
+      );
+    }
+
+    static #durationToString(duration) {
+      const min = Math.round(duration / 600);
+      return `${min}:00 ~ ${min}:59`;
+    }
+  }
 
   class ResultDiv {
     static #element = $id("result");
@@ -802,12 +1172,13 @@ window.addEventListener("load", () => {
 
   class ReplayTable {
     static #element = $id("replay-list");
+    static #tBodies = this.#element.tBodies;
     static #classList = this.#element.classList;
 
-    static addReplay = ((replay) => {
+    static addReplay(replay) {
       // TODO ソートだけの場合はflex-orderのほうがはやいかも
       this.#element.appendChild(replay.tBody);
-    }).bind(this);
+    }
 
     static setReady(isReady) {
       if (isReady)
@@ -817,7 +1188,7 @@ window.addEventListener("load", () => {
     }
 
     static async clear() {
-      for (const tBody of this.#element.tBodies) {
+      for (const tBody of this.#tBodies) {
         this.#element.removeChild(tBody);
       }
     }
@@ -909,7 +1280,7 @@ window.addEventListener("load", () => {
       this.#start = Date.now();
     }
     lap() {
-      console.log(`${(Date.now() - this.#start) / 1000}sec`);
+      console.trace(`${(Date.now() - this.#start) / 1000}sec`);
       this.#start = Date.now();
     }
 
