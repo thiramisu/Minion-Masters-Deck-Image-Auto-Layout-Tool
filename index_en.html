@@ -7,10 +7,12 @@
 	<meta name="twitter:creator" content="@tiramisu_oTATo" />
 	<meta property="og:title" content="Minion Masters Deck Image Auto Layout Tool for Twitter" />
 	<meta property="og:type" content="website" />
-	<meta property="og:url" content="https://thiramisu.github.io/Minion-Masters-Deck-Image-Auto-Layout-Tool/index_en.html" />
+	<meta property="og:url"
+		content="https://thiramisu.github.io/Minion-Masters-Deck-Image-Auto-Layout-Tool/index_en.html" />
 	<meta property="og:image"
 		content="https://thiramisu.github.io/Minion-Masters-Deck-Image-Auto-Layout-Tool/thumbnail.jpg" />
-	<meta property="og:description" content="Relayouting Tool of Minion Masters' Deck Image to visualize cooler and easier on Twitter" />
+	<meta property="og:description"
+		content="Relayouting Tool of Minion Masters' Deck Image to visualize cooler and easier on Twitter" />
 	<title>Minion Masters Deck Image Auto Layout Tool</title>
 	<link rel="stylesheet" href="minimas.css" />
 	<link rel="icon" type="image/png" href="icon.png" />
@@ -19,23 +21,55 @@
 
 <body>
 	<div class="label">※Chrome以外で動くか分かりません / Chrome Recommended</div>
-	<label class="label"><span class="title">レイアウトタイプ / Layout Type</span>
-		<select id="layout" class="select">
-			<option value="0">type 0</option>
-			<option value="1">type 1</option>
-			<option value="3">type 1-B</option>
-			<option value="2">type 2</option>
-		</select>
-	</label>
-	<label class="label">
-		デッキ構築画面のスクショ / Screenshot of deckbuilding<br />
-		<input type="file" accept=".png,.jpg" id="image"><br />
-		(ボタンの上にドラッグ&ドロップ可 / Drag-and-drop to the button is available)
-	</label>
-	<div class="label">結果 / Result<br />
-		(右クリックから保存できます / Right-click to save to local)<br />
-		<div id="warning" class="warning"></div>
-		<canvas id="canvas" class="canvas" width="360" height="195"></canvas>
+	<div class="label">
+		<table class="filter--table">
+			<tr>
+				<th class="filter--th">レイアウトタイプ<br />Layout Type</th>
+				<td class="filter--td">
+					<select id="layout" class="input select">
+						<option value="0">type 0</option>
+						<option value="1">type 1</option>
+						<option value="3">type 1-B</option>
+						<option value="2">type 2</option>
+					</select>
+				</td>
+			</tr>
+			<tr>
+				<th class="filter--th">デッキ構築画面のスクショ<br />Screenshot of deckbuilding</th>
+				<td class="filter--td">
+					<input type="file" accept=".png,.jpg" id="image">
+				</td>
+			</tr>
+		</table>
+		<div class="flex-row attention">
+			<div>ボタンの上にドラッグ&ドロップできます。</div>
+			<div class="vertical-line"></div>
+			<div>Drag-and-drop onto the button is available.</div>
+		</div>
+	</div>
+	<div class="label">
+		<table class="filter--table">
+			<tr>
+				<th class="filter--th">結果<br />Result</th>
+				<td class="filter--td">
+					<div id="warning" class="warning"></div>
+					<canvas id="canvas" class="canvas" width="360" height="195"></canvas>
+				</td>
+			</tr>
+		</table>
+		<div class="flex-row attention">
+			<div>
+				右クリックから[画像をコピー]後、<br />
+				TwitterやDiscordの入力欄に[貼り付け]できます。<br />
+				同じく右クリックから[保存]もできます。
+			</div>
+			<div class="vertical-line"></div>
+			<div>
+				You can right-click to [copy image],<br />
+				then [paste] it to the input box of Twitter and Discord.<br />
+				You can also right-click to [save] to local.
+			</div>
+		</div>
 	</div>
 	<div class="label">元画像 / Original Image<br />
 		<img id="preview" class="preview">
@@ -44,7 +78,7 @@
 		<img src="example.jpg">
 	</div>
 	<footer class="center">created by <a href="https://twitter.com/tiramisu_oTATo" class="link">@tiramisu_oTATo</a>
-		(unofficial)</footer>
+		(unofficial)<br>If there are any problems, please contact me.<br>問題等ありましたら、ご連絡ください。</footer>
 </body>
 
 </html>

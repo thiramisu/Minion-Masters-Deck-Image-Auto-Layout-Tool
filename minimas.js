@@ -44,6 +44,18 @@ window.addEventListener("load", () => {
   const $id = (id) => document.getElementById(id);
 
 
+  class Warning {
+    static log(output) {
+      this.#output.textContent = output;
+    }
+
+    static clear() {
+      Warning.#output.textContent = "";
+    }
+
+    static #output = $id("warning");
+  }
+
   class Canvas {
     static #canvas = $id("canvas");
     static #ctx;
@@ -91,7 +103,7 @@ window.addEventListener("load", () => {
       this.#ctx.fillRect(0, 0, this.#width, this.#height);
       this.#drawImage(resolutionRatio, 238, 8, 360, 82, card1X, card1Y, 360, 82);
       this.#drawImage(resolutionRatio, 594, 8, 360, 82, card2X, card2Y, 360, 82);
-      this.#drawImage(resolutionRatio, 102, 3, 84, 84, masterX, masterY, masterScale, masterScale);
+      this.#drawImage(resolutionRatio, 102, 3, 85, 85, masterX, masterY, masterScale, masterScale);
       this.#drawImage(resolutionRatio, 194, 25, 39, 39, WCX, WCY, WCScale, WCScale);
       this.#drawImage(resolutionRatio, 955, 19, 52, 52, manaX, manaY, manaScale, manaScale);
 
@@ -105,8 +117,8 @@ window.addEventListener("load", () => {
       );
       // 仕切り
       this.#drawImage(resolutionRatio,
-        112, 94, 360, 2,
-        11, 3, 360, 2
+        112, 94, 370, 2,
+        11, 3, 370, 2
       );
       this.#ctx.restore();
     };
@@ -141,13 +153,14 @@ window.addEventListener("load", () => {
 
     static #loadResolutionRatio(e) {
       if (ImageLoader.#imageElement.naturalWidth / 16 * 9 !== ImageLoader.#imageElement.naturalHeight) {
-        Warning.log("アスペクト比が厳密な16:9でないため、表示が崩れる可能性があります。 / Because the aspect ratio is not exactly 16:9, There is a possibility that the layout is broken.");
+        Warning.log("アスペクト比が厳密な16:9でないため、表示が崩れる可能性があります。 / Because the aspect ratio is not exactly 16:9, There is a possibility the layout is broken.");
       }
       ImageLoader.#resolutionRatio = ImageLoader.#imageElement.naturalWidth * 10 / 128;
     }
 
     static #initialize() {
       this.#inputImage.addEventListener("change", this.loadImage);
+      this.#imageElement.addEventListener("load", Warning.clear);
       this.#imageElement.addEventListener("load", ImageLoader.#loadResolutionRatio);
       this.#imageElement.addEventListener("load", Canvas.applyImage);
       return true;
@@ -192,14 +205,6 @@ window.addEventListener("load", () => {
 
   }
   DIRECT_RAYOUT = Layout.directSet;
-
-  class Warning {
-    static log(output) {
-      this.#output.textContent = output;
-    }
-
-    static #output = $id("warning");
-  }
 
   localStorage.removeItem("resolution");
 });
