@@ -25,7 +25,7 @@ window.addEventListener("load", () => {
       CSLogic_TeamMode: "CSLogic.TeamMode",
       T_BODY_TAG_NAME: "tbody",
       CARD_SEPARATOR: ' <span class="unmarkable">/</span> ',
-      ESCAPE_REGEXP: new RegExp(/<.+?>/)
+      ESCAPE_REGEXP: new RegExp(/<.+?(?:>|$)/)
     }),
     $id = (id) => document.getElementById(id),
     $x = (number) => '0x' + number.toString(16).toUpperCase(),
@@ -298,9 +298,9 @@ window.addEventListener("load", () => {
 
   const GameModeName = new NameGetter(null, [
     [0, "1v1"],
-    [1, "プリメイド"],
-    [2, "野良？"],
+    [1, "2v2"],
     // 未実装
+    [2, "野良？"],
     [3, "NPC"]
   ]);
 
@@ -648,17 +648,18 @@ window.addEventListener("load", () => {
         ReplayManager.#currentReplay = replay;
         ReplayManager.#you = you;
         replay.players.sort(this.#playerSortFunc);
+        console.log(replay.players[0].name);
         this.#createTBody(replay);
       }
       ReplayManager.#currentReplay = null;
       ReplayManager.#you = null;
     }
 
-    static #playerSortFunc(player1, _player2) {
+    static #playerSortFunc(player1, player2) {
       return ReplayManager.#you === undefined ? (
         player1.team === ReplayManager.#currentReplay.winTeamId ? -1 : 0
       )
-        : player1 === ReplayManager.#you ? -1 : player1.team === ReplayManager.#you.team ? -1 : 0
+        : player1 === ReplayManager.#you ? -1 : player1.team === ReplayManager.#you.team && player2.team !== ReplayManager.#you.team ? -1 : 0
     }
 
     static #nameComparer(player) {
@@ -1292,4 +1293,7 @@ window.addEventListener("load", () => {
       this.#globalTimer?.lap();
     }
   }
+
+  console.log($escape("あ<い>う"));
+  console.log($escape("あう<い"));
 });
