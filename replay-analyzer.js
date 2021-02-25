@@ -25,7 +25,8 @@ window.addEventListener("load", () => {
       CSLogic_TeamMode: "CSLogic.TeamMode",
       T_BODY_TAG_NAME: "tbody",
       CARD_SEPARATOR: ' <span class="unmarkable">/</span> ',
-      ESCAPE_REGEXP: new RegExp(/<.+?(?:>|$)/)
+      ESCAPE_REGEXP: new RegExp(/<.+?(?:>|$)/, "g"),
+      CHANGE_EVENT: new Event("change")
     }),
     $id = (id) => document.getElementById(id),
     $x = (number) => '0x' + number.toString(16).toUpperCase(),
@@ -276,7 +277,11 @@ window.addEventListener("load", () => {
     [303, "Groggy Woodsman"],
     [305, "Mountain Gale"],
     [306, "Shield-Captain Avea"],
+    [308, "Rockin' Roller"],
+    [309, "Lash of Ah'Mun"],
+    [310, "Shroom Puff"],
     [312, "Akinlep's Gong of Pestilence"],
+    [314, "Jing Long"],
     [315, "Chain Gang"]
   ]
   );
@@ -303,6 +308,25 @@ window.addEventListener("load", () => {
     [2, "野良？"],
     [3, "NPC"]
   ]);
+
+
+  const RankName = class {
+    static #rankNames = ["Master", "Diamond", "Platinum", "Gold", "Silver", "Bronze", "Stone", "Wood"];
+    static #grandMaster = "GM";
+    static #contender = "Contender";
+
+    static get(rankId, rating) {
+      switch (rankId) {
+        case 0:
+          return `${this.#grandMaster} #${rating}`;
+        case 4294967295:
+          return `${this.#contender} #${rating}`;
+        default:
+          const rankId2 = rankId - 1;
+          return `${this.#rankNames[Math.trunc(rankId2 / 5)]}${rankId2 % 5 + 1}`;
+      }
+    }
+  };
 
   // [1, 2] != [1, 2] とならないようにする
   class ArrayPool {
@@ -403,10 +427,15 @@ window.addEventListener("load", () => {
       deckAddress = findTypedArray(dataView, 0x0F, dataView.getUint32(targetAddress, true), deckAddress) + 0x05;
       // console.log(`${i}:${deckAddress - old}`);
       player.deck = constructDeckArray(dataView, deckAddress);
-      targetAddress += 0x0D;
+      targetAddress += 0x04;
+      player.rating = dataView.getUint32(targetAddress, true);
+      targetAddress += 0x09;
       length = dataView.getUint8(targetAddress);
-      player.name = $escape(getString(dataView.buffer, targetAddress + 1, length));
-      targetAddress += length + 0x16;
+      targetAddress += 0x01;
+      player.name = $escape(getString(dataView.buffer, targetAddress, length));
+      targetAddress += length;
+      player.isNPC = dataView.getUint32(targetAddress, true) === 0 && dataView.getUint32(targetAddress + 4, true) === 0;
+      targetAddress += 0x15;
       player.team = dataView.getUint32(targetAddress, true);
       targetAddress += (i === 0 ? 0x41 : 0x20);
       if (dataView.getUint8(targetAddress) === 0x0A) {
@@ -418,12 +447,13 @@ window.addEventListener("load", () => {
         length = dataView.getUint8(targetAddress);
         player.guildName = getString(dataView.buffer, targetAddress + 1, length);
       }
-      players.push(Player(player.name, player.guildName, player.masterId, player.deck, player.team));
+      player.rankId = dataView.getUint32(targetAddress + length + 13, true);
+      players.push(Player((player.isNPC ? "&lt;NPC&gt;" : "") + player.name, player.guildName, player.masterId, player.deck, player.team, player.rankId, player.rating, player.isNPC));
     }
     return players;
   };
 
-  const Player = (name, guildName, masterId, deck, team, rankId) => Object.freeze({ name, team, rankId, guildName, masterId, deck: deckList.get(deck.sort()), uniqueDeck: new Set(deck) });
+  const Player = (name, guildName, masterId, deck, team, rankId, rating, isNPC) => Object.freeze({ name, team, rankId, rating, isNPC, guildName, masterId, deck: deckList.get(deck.sort()), uniqueDeck: new Set(deck) });
 
   const findTypedArray = (() => {
     const
@@ -482,9 +512,11 @@ window.addEventListener("load", () => {
         return;
       this.#isSorting = true;
       ReplayTable.setReady(false);
+      ScrollPositionCacher.save();
       await $applicationOfUi();
       UIManager.constructFilterProperties();
       await Promise.all([new Promise(appliesFilter ? this.#filter : this.#sort), $sleep(0.1)]);
+      ScrollPositionCacher.load();
       ReplayTable.setReady(true);
       this.#isSorting = false;
     }).bind(this);
@@ -492,8 +524,6 @@ window.addEventListener("load", () => {
     static #replays;
     static #replaysCount;
     static #replayCounters;
-    static #visibleReplaysCount;
-    static #winCount;
     static #playerNameCounter;
     static #fileInputElement = $id("replay-directory");
     static #loadProggressBar = $id("progress");
@@ -614,7 +644,7 @@ window.addEventListener("load", () => {
       await Promise.all(promises);
       this.#replays = Array.from(this.#replays);
       CountUpTimer.lap();
-      this.#changeYourName(this.#playerNameCounter.max());
+      this.changeYourName(this.#playerNameCounter.max(), true);
       CountUpTimer.lap();
       $id("player-names").innerHTML = '<option value="' + Array.from(this.#playerNameCounter.result.keys()).sort().join('"><option value="') + '">';
       CountUpTimer.lap();
@@ -638,9 +668,9 @@ window.addEventListener("load", () => {
       }
     }
 
-    static #changeYourName(name) {
+    static changeYourName(name, isDefault) {
       this.#yourName = name;
-      UIManager.setFilterValue(name, "name");
+      UIManager.setFilterValue(name, "name", isDefault);
       for (const replay of this.#replays) {
         const you = replay.players.find(this.#nameComparer, this);
         replay.you.exists = you !== undefined;
@@ -648,7 +678,6 @@ window.addEventListener("load", () => {
         ReplayManager.#currentReplay = replay;
         ReplayManager.#you = you;
         replay.players.sort(this.#playerSortFunc);
-        console.log(replay.players[0].name);
         this.#createTBody(replay);
       }
       ReplayManager.#currentReplay = null;
@@ -677,30 +706,34 @@ window.addEventListener("load", () => {
         players = replay.players;
 
       tBody.className = `detail-table--tbody all-table--tbody`;
-      tBody.insertAdjacentHTML(Const.ADJACENT_POSITION, `<tr>
+      tBody.innerHTML = `<tr>
             <td rowspan="4" class="detail-table--td">${new Intl.DateTimeFormat(Const.EMPTY_ARRAY, Const.LOCALE_FORMAT).format(replay.date)}</td>
             <td rowspan="4" class="detail-table--td">${durationString.length <= 4 ? Const.INVISIBLE_ZERO : Const.EMPTY_STRING}${durationString}</td>
             <td rowspan="4" class="detail-table--td">${GameModeName.get(replay.gameMode)}</td>
             <td rowspan="4" class="detail-table--td ${!isWinner ? Const.EMPTY_STRING : isYou ? Const.YOU_EXIST_CLASS_NAME : Const.ALLY_CLASS_NAME}">${!isYou ? Const.EMPTY_STRING : isWinner ? Const.WIN_STRING : Const.LOSE_STRING}</td>
             <td class="detail-table--td ${!players[0]?.name ? "invalid" : isYou ? Const.YOU_EXIST_CLASS_NAME : Const.ALLY_CLASS_NAME}">${players[0]?.name}</td>
+            <td class="detail-table--td ${isYou ? Const.YOU_EXIST_CLASS_NAME : Const.ALLY_CLASS_NAME}">${RankName.get(players[0]?.rankId, players[0]?.rating)}</td>
             <td class="detail-table--td ${isYou ? Const.YOU_EXIST_CLASS_NAME : Const.ALLY_CLASS_NAME}">${MasterName.get(players[0]?.masterId)}</td>
             <td class="detail-table--td td--left ${isYou ? Const.YOU_EXIST_CLASS_NAME : Const.ALLY_CLASS_NAME}">${getDeckString(players[0]?.deck) ?? "エラー"}</td>
           </tr>
           <tr class="${isTeamBattle ? Const.SECOND_ALLY_CLASS_NAME : Const.EMPTY_STRING}">
             <td class="detail-table--td${players[1]?.name ? Const.EMPTY_STRING : " invalid"}">${players[1]?.name}</td>
+            <td class="detail-table--td">${RankName.get(players[1]?.rankId, players[1]?.rating)}</td>
             <td class="detail-table--td">${MasterName.get(players[1]?.masterId)}</td>
             <td class="detail-table--td td--left">${getDeckString(players[1]?.deck) ?? "エラー"}</td>
           </tr>${isTeamBattle ? `
           <tr class="detail-table--tr3">
             <td class="detail-table--td${players[2]?.name ? Const.EMPTY_STRING : " invalid"}">${players[2]?.name}</td>
+            <td class="detail-table--td">${RankName.get(players[2]?.rankId, players[2]?.rating)}</td>
             <td class="detail-table--td">${MasterName.get(players[2]?.masterId)}</td>
             <td class="detail-table--td td--left">${getDeckString(players[2]?.deck) ?? "エラー"}</td>
           </tr>
           <tr>
             <td class="detail-table--td${players[3]?.name ? Const.EMPTY_STRING : " invalid"}">${players[3]?.name}</td>
+            <td class="detail-table--td">${RankName.get(players[3]?.rankId, players[3]?.rating)}</td>
             <td class="detail-table--td">${MasterName.get(players[3]?.masterId)}</td>
             <td class="detail-table--td td--left">${getDeckString(players[3]?.deck) ?? "エラー"}</td>
-          </tr>` : Const.EMPTY_STRING}`);
+          </tr>` : Const.EMPTY_STRING}`;
     }
   }
 
@@ -792,8 +825,10 @@ window.addEventListener("load", () => {
         this.#filterProperties.add(new FilterProperty(gameMode_f, FilterProperty.Mode.BinaryFlag, "gameMode_f"));
     }
 
-    static setFilterValue(value, propertyName) {
+    static setFilterValue(value, propertyName, isDefault) {
       this.#filterElementOf[propertyName].value = value;
+      if (isDefault)
+        this.#filterElementOf[propertyName].dataset.defaultValue = value;
     }
 
     static setMatchCountAndWinRate(matchCount, winCount, loseCount) {
@@ -916,7 +951,6 @@ window.addEventListener("load", () => {
       for (const radio of this.#filterElementOf.you)
         radio.addEventListener("change", ReplayManager.sort);
       for (const textInputName of [
-        "name",
         "durationGreaterThanMin",
         "durationGreaterThanSec",
         "durationLessThanMin",
@@ -932,6 +966,17 @@ window.addEventListener("load", () => {
         element.addEventListener("click", this.#select);
         element.addEventListener("dblclick", this.#onTextInputDoubleClick);
       }
+
+      const element = this.#filterElementOf.name;
+      element.addEventListener("change", () => {
+        ResultDiv.setReady(false);
+        ReplayManager.changeYourName(element.value);
+        ReplayManager.sort();
+        ResultDiv.setReady(true);
+      });
+      element.addEventListener("click", this.#select);
+      element.addEventListener("dblclick", this.#onTextInputDoubleClick);
+
       for (const gameModeCheckboxName of [
         "gameMode1v1",
         "gameMode2v2",
@@ -950,7 +995,7 @@ window.addEventListener("load", () => {
       const target = e.target;
       target.value = target.dataset.defaultValue;
       target.blur();
-      ReplayManager.sort();
+      target.dispatchEvent(Const.CHANGE_EVENT);
     }
   }
 
@@ -1178,6 +1223,7 @@ window.addEventListener("load", () => {
 
     static addReplay(replay) {
       // TODO ソートだけの場合はflex-orderのほうがはやいかも
+      //      いやtransformのが速いのでは
       this.#element.appendChild(replay.tBody);
     }
 
@@ -1272,6 +1318,17 @@ window.addEventListener("load", () => {
     }
   }
 
+  class ScrollPositionCacher {
+    static #beforeY;
+    static #filterFormRect = document.forms.filter.getBoundingClientRect();
+    static save() {
+      this.#beforeY = this.#filterFormRect.y;
+    }
+    static load() {
+      window.scrollBy(this.#beforeY - this.#filterFormRect.y, 0);
+    }
+  }
+
   // for debug
   class CountUpTimer {
     #start;
@@ -1293,7 +1350,4 @@ window.addEventListener("load", () => {
       this.#globalTimer?.lap();
     }
   }
-
-  console.log($escape("あ<い>う"));
-  console.log($escape("あう<い"));
 });

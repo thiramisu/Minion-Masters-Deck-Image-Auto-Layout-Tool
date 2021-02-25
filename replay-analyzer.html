@@ -154,6 +154,7 @@
             <th data-sort="gameMode" class="detail-table--th sortable-th">モード</th>
             <th data-sort="winTeamId" class="detail-table--th sortable-th">勝敗</th>
             <th class="detail-table--th">プレイヤー</th>
+            <th class="detail-table--th">ランク</th>
             <th class="detail-table--th">マスター</th>
             <th class="detail-table--th">デッキ</th>
           </tr>
@@ -173,7 +174,7 @@
     </div>
   </div>
   <div class="loading-screen">ロード中</div>
-	<div class="label">※Chrome以外で動くか分かりません / Chrome Recommended</div>
+  <div class="label">※Chrome以外で動くか分かりません / Chrome Recommended</div>
   <div class="label">
     <table class="filter--table">
       <tr>
@@ -189,14 +190,17 @@
       <li>複数選択で何も選択しない場合は、全て選択している場合と同じ動作になります。</li>
       <li>試合のプレイヤーはあなた>相方>勝者>その他の順に並び替えられます。</li>
       <li>「あなたの名前」には試合数が一番多いプレイヤーの名前が自動的に設定されます。</li>
+      <li>名前の先頭に「&lt;NPC&gt;」とついているのはNPCです。<br />
+        (PCは名前の「&lt;」から「&gt;」までが表示されないため、つくことはありません。)</li>
+
     </ul>
   </div>
   <div class="label">
     バグ・未実装など
     <ul>
       <li>ゲームモード「野良」「NPC」判定ができてません</li>
-      <li>「あなたの名前」を変更しても何も起こりません</li>
-      <li>フィルターの変更でスクロール位置が(正常動作ではありますが)ひどいことになります</li>
+      <li>日付が(確認時点で過去へ最大2日)ずれます、理由は謎なので調査中です</li>
+      <li>ランクの順位(#の後)がたまに突拍子もない数字になりますが、リプレイが記録された時点でのバグと思われるため修正不可能です</li>
     </ul>
   </div>
   <footer class="center">created by <a href="https://twitter.com/tiramisu_oTATo" class="link">@tiramisu_oTATo</a>
