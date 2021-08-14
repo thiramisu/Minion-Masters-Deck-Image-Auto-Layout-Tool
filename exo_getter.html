@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="ja" xml:lang="ja" xmlns:og="http://ogp.me/ns#">
+
+<head>
+  <meta charset="utf-8">
+  <title>ミニマスリプレイからの.exo取得ツール</title>
+  <link rel="stylesheet" href="minimas.css" />
+  <link rel="icon" type="image/png" href="icon.png" />
+  <script src="exo_getter.js" defer></script>
+</head>
+
+<body>
+  <div class="label">※Chrome以外で動くか分かりません / Chrome Recommended</div>
+  <div class="label">
+    <table class="filter--table">
+      <tr>
+        <th class="filter--th">0:00フレーム</th>
+        <td class="filter--td">
+          <input id="delta-frame" type="number" value="123" class="number2">
+        </td>
+      </tr>
+      <tr>
+        <th class="filter--th">カード使用前フレーム数</th>
+        <td class="filter--td">
+          <input id="frame-count-before-card-using" type="number" value="6" class="number2">
+        </td>
+      </tr>
+      <tr>
+        <th class="filter--th">カード使用後フレーム数</th>
+        <td class="filter--td">
+          <input id="frame-count-after-card-using" type="number" value="24" class="number2">
+        </td>
+      </tr>
+      <tr>
+        <th class="filter--th">リプレイファイル<br />.rp</th>
+        <td class="filter--td">
+          <input type="file" accept=".rp" id="replay-file">
+        </td>
+      </tr>
+      <tr>
+        <th class="filter--th">元オブジェクトファイル<br />.exo</th>
+        <td class="filter--td">
+          <input type="file" accept=".exo" id="exo-file">
+        </td>
+      </tr>
+    </table>
+    <div class="flex-row attention">
+      <div>ボタンの上にドラッグ&ドロップできます。</div>
+    </div>
+    <div class="flex-row attention">
+      <div>「0:00フレーム」には0:00と初めて表示されるフレーム数を入力するとうまくいくはずです。</div>
+    </div>
+    <div class="flex-row attention">
+      <div class="attention-child">
+        「元オブジェクトファイル(.exo)」は、AviUtlの拡張編集ウィンドウに元動画を[ドラッグ&ドロップ]し、そのまま[右クリック]>[ファイル>オブジェクトのエクスポート]をしたものを選択してください。フィルタなどの変更も恐らく引き継がれますが、動作保証はできません。
+      </div>
+    </div>
+  </div>
+  <div class="label">
+    <div class="flex-row attention">
+      <div class="attention-child">
+        【重要】実装が面倒だったので、一度保存した.exoを何かのテキストエディタで開きなおして、文字コードをShift_JISに変更してからAviUtlに読み込ませる必要があります。面倒ですね。
+      </div>
+    </div>
+    <div class="flex-row attention">
+      <div class="attention-child">
+        AviUtlでの.exo読み込みは時間がそれなりにかかると思われます。固まるかもしれませんが、待っていればそのうち動くはずです。
+      </div>
+    </div>
+    <table class="filter--table">
+      <tr>
+        <th class="filter--th">結果<br />Result</th>
+        <td class="filter--td">
+          <div id="warning" class="warning"></div>
+          <a id="result" class="link">保存</a>
+        </td>
+      </tr>
+    </table>
+  </div>
+  <footer class="center">created by <a href="https://twitter.com/tiramisu_oTATo" class="link">@tiramisu_oTATo</a>
+    (unofficial)<br>If there are any problems, please contact me.<br>問題等ありましたら、ご連絡ください。</footer>
+</body>
+
+</html>
