@@ -203,7 +203,7 @@ window.addEventListener("load", () => {
       },
     }
   );
-  DIRECT_RAYOUT = layout.directSet;
+  DIRECT_RAYOUT = layout.changeLayoutDirectly;
 
   localStorage.removeItem("resolution");
 });
