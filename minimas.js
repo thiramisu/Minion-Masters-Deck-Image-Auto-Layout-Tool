@@ -63,8 +63,8 @@ window.addEventListener("load", () => {
     static #height;
 
     static applyImage(e) {
-      Canvas.#reset.apply(Canvas, Layout.getSize());
-      const positions = Layout.getPositions();
+      Canvas.#reset.apply(Canvas, layout.getSize());
+      const positions = layout.getPositions();
       if (positions.length === 2) {
         Canvas.#trim.apply(Canvas, positions);
         return;
@@ -125,7 +125,7 @@ window.addEventListener("load", () => {
 
     static #trim(sx, sy) {
       const resolutionRatio = ImageLoader.resolutionRatio;
-      const size = Layout.getSize();
+      const size = layout.getSize();
       this.#drawImage(resolutionRatio, sx, sy, size[0], size[1], 0, 0, size[0], size[1]);
     }
   }
@@ -145,7 +145,7 @@ window.addEventListener("load", () => {
 
     static #init = this.#initialize();
 
-    static loadImage(e) {
+    static loadImage() {
       if (ImageLoader.#inputImage.files.length === 0)
         return;
       ImageLoader.#imageElement.src = URL.createObjectURL(ImageLoader.#inputImage.files[0]);
@@ -167,44 +167,45 @@ window.addEventListener("load", () => {
     }
   }
 
-
-  class Layout {
-    static #select = $id("layout");
-    static #direct = JSON.parse(localStorage.getItem("direct-layout")) ?? {
-      size: [],
-      positions: []
-    };;
-    static #kindId = this.#load();
-
-    static getSize() {
-      return (this.#kindId === -1 ? this.#direct : LAYOUTS[this.#kindId]).size;
-    }
-    static getPositions() {
-      return (this.#kindId === -1 ? this.#direct : LAYOUTS[this.#kindId]).positions;
-    }
-    static #set(id) {
-      this.#kindId = id;
-      localStorage.setItem("layout-kind", this.#kindId);
-    }
-    static directSet(layout) {
-      this.#set(-1);
-      this.#direct.size = layout.slice(0, 2);
-      this.#direct.positions = layout.slice(2);
-      localStorage.setItem("direct-layout", JSON.stringify(this.#direct));
-    }
-    static #load() {
-      const kind = parseInt(localStorage.getItem("layout-kind") ?? 1, 10);
-      this.#select.value = kind;
-      this.#select.addEventListener("change", this.#save);
-      this.#select.addEventListener("change", ImageLoader.loadImage);
-      return kind;
-    }
-    static #save(e) {
-      Layout.#set(parseInt(Layout.#select.value, 10));
+  const layout = (({ select, direct }) => {
+    const saveKindId = () => {
+      localStorage.setItem("layout-kind", kindId);
     }
 
-  }
-  DIRECT_RAYOUT = Layout.directSet;
+    const DIRECT_KIND_ID = -1;
+    let kindId = parseInt(localStorage.getItem("layout-kind") ?? 1, 10);
+    select.value = kindId;
+    select.addEventListener("change", () => {
+      kindId = parseInt(select.value, 10);
+      saveKindId();
+      ImageLoader.loadImage();
+    });
+
+    return {
+      getSize() {
+        return (kindId === DIRECT_KIND_ID ? direct : LAYOUTS[kindId]).size;
+      },
+      getPositions() {
+        return (kindId === DIRECT_KIND_ID ? direct : LAYOUTS[kindId]).positions;
+      },
+      changeLayoutDirectly(layout) {
+        kindId = DIRECT_KIND_ID;
+        saveKindId();
+        direct.size = layout.slice(0, 2);
+        direct.positions = layout.slice(2);
+        localStorage.setItem("direct-layout", JSON.stringify(direct));
+      }
+    }
+  })(
+    {
+      select: $id("layout"),
+      direct: JSON.parse(localStorage.getItem("direct-layout")) ?? {
+        size: [],
+        positions: []
+      },
+    }
+  );
+  DIRECT_RAYOUT = layout.directSet;
 
   localStorage.removeItem("resolution");
 });
