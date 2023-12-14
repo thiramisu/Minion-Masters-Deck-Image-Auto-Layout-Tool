@@ -2,12 +2,15 @@ let DIRECT_RAYOUT;
 window.addEventListener("load", () => {
   "use strict";
   const LAYOUTS = [
+    // トリミングだけ
     {
       size: [913, 98],
       positions: [
         99, 0 // trim
       ]
     },
+    // 水平の仕切り線の上にマスターー、WC、平均マナ
+    // 下にカードを2行で表示
     {
       size: [360, 195],
       positions: [
@@ -19,6 +22,8 @@ window.addEventListener("load", () => {
       ]
     },
     {
+      // 垂直の仕切り線の左にマスターー、WC、平均マナ
+      // 右にカードを2行で表示
       size: [393, 164],
       positions: [
         33, 0, 33, 82, // cards
@@ -29,6 +34,9 @@ window.addEventListener("load", () => {
       ]
     },
     {
+      // 水平の仕切り線の上にマスターー、WC、平均マナ
+      // 下にカードを2行で表示
+      // (パターン2)
       size: [384, 216],
       positions: [
         12, 52, 12, 134, // cards
