@@ -92,14 +92,14 @@ window.addEventListener("load", () => {
     };
 
     static #drawImage(resolutionRatio, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight) {
-      this.#ctx.drawImage(ImageLoader.image,
+      this.#ctx.drawImage(imageLoader.image,
         sx * resolutionRatio / 100, sy * resolutionRatio / 100, sWidth * resolutionRatio / 100, sHeight * resolutionRatio / 100,
         dx, dy, dWidth, dHeight
       );
     }
 
     static #drawImageAll(card1X, card1Y, card2X, card2Y, masterX, masterY, masterScale, WCX, WCY, WCScale, manaX, manaY, manaScale, gridX, gridY, gridAngle = 0) {
-      const resolutionRatio = ImageLoader.resolutionRatio;
+      const resolutionRatio = imageLoader.resolutionRatio;
       this.#ctx.fillRect(0, 0, this.#width, this.#height);
       this.#drawImage(resolutionRatio, 238, 8, 360, 82, card1X, card1Y, 360, 82);
       this.#drawImage(resolutionRatio, 594, 8, 360, 82, card2X, card2Y, 360, 82);
@@ -124,48 +124,46 @@ window.addEventListener("load", () => {
     };
 
     static #trim(sx, sy) {
-      const resolutionRatio = ImageLoader.resolutionRatio;
+      const resolutionRatio = imageLoader.resolutionRatio;
       const size = layout.getSize();
       this.#drawImage(resolutionRatio, sx, sy, size[0], size[1], 0, 0, size[0], size[1]);
     }
   }
 
-  class ImageLoader {
-    static #imageElement = $id("preview");
-    static #inputImage = $id("image");
-    static get image() {
-      return this.#imageElement;
-    }
-
-    // 1280pxを基準にした時の横幅(%)
-    static #resolutionRatio;
-    static get resolutionRatio() {
-      return this.#resolutionRatio;
-    }
-
-    static #init = this.#initialize();
-
-    static loadImage() {
-      if (ImageLoader.#inputImage.files.length === 0)
-        return;
-      ImageLoader.#imageElement.src = URL.createObjectURL(ImageLoader.#inputImage.files[0]);
-    };
-
-    static #loadResolutionRatio(e) {
-      if (ImageLoader.#imageElement.naturalWidth / 16 * 9 !== ImageLoader.#imageElement.naturalHeight) {
+  const imageLoader = (({ imageElement, imageInput }) => {
+    const checkResolutionRatio = (e) => {
+      if (imageElement.naturalWidth / 16 * 9 !== imageElement.naturalHeight) {
         Warning.log("アスペクト比が厳密な16:9でないため、表示が崩れる可能性があります。 / Because the aspect ratio is not exactly 16:9, There is a possibility the layout is broken.");
       }
-      ImageLoader.#resolutionRatio = ImageLoader.#imageElement.naturalWidth * 10 / 128;
     }
 
-    static #initialize() {
-      this.#inputImage.addEventListener("change", this.loadImage);
-      this.#imageElement.addEventListener("load", Warning.clear);
-      this.#imageElement.addEventListener("load", ImageLoader.#loadResolutionRatio);
-      this.#imageElement.addEventListener("load", Canvas.applyImage);
-      return true;
-    }
-  }
+    const loadImage = () => {
+      if (imageInput.files.length === 0)
+        return;
+      imageElement.src = URL.createObjectURL(imageInput.files[0]);
+    };
+
+    imageInput.addEventListener("change", loadImage);
+    imageElement.addEventListener("load", () => {
+      Warning.clear();
+      checkResolutionRatio();
+      Canvas.applyImage();
+    });
+
+    return {
+      get image() {
+        return imageElement;
+      },
+      // 1280pxを基準にした時の横幅(%)
+      get resolutionRatio() {
+        return imageElement.naturalWidth * 10 / 128;
+      },
+      loadImage,
+    };
+  })({
+    imageElement: $id("preview"),
+    imageInput: $id("image"),
+  });
 
   const layout = (({ select, direct }) => {
     const saveKindId = () => {
@@ -178,7 +176,7 @@ window.addEventListener("load", () => {
     select.addEventListener("change", () => {
       kindId = parseInt(select.value, 10);
       saveKindId();
-      ImageLoader.loadImage();
+      imageLoader.loadImage();
     });
 
     return {
