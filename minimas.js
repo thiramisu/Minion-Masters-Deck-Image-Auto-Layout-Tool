@@ -14,7 +14,7 @@ window.addEventListener("load", () => {
     {
       size: [360, 195],
       positions: [
-        0, 31, 0, 113,
+        0, 31, 0, 113, // cards
         273, 1, 27, // master
         306, 4, 22, // WC
         333, 2, 25, // mana
