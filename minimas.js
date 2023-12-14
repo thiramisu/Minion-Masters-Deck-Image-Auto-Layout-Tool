@@ -1,51 +1,33 @@
 let DIRECT_LAYOUT;
 window.addEventListener("load", () => {
   "use strict";
+  const CARD_LINE_SIZE = { x: 766, y: 184 };
   const LAYOUTS = [
     // トリミングだけ
     {
-      size: [913, 98],
+      size: [2160, 216],
       positions: [
-        99, 0 // trim
+        192, 1218 // trim
       ]
     },
-    // 水平の仕切り線の上にマスターー、WC、平均マナ
+    // memo line 1210 ~ 3px card 1218 ~ 216px
+    // 水平の仕切り線の上にマスター、WC、平均マナ
     // 下にカードを2行で表示
     {
-      size: [360, 195],
+      size: [800, 450],
       positions: [
-        0, 31, 0, 113, // cards
-        273, 1, 27, // master
+        17, 76, 17, 268, // cards
+        685, 5, 70, // master
         306, 4, 22, // WC
-        333, 2, 25, // mana
         2, 26 //grid
       ]
-    },
-    {
-      // 垂直の仕切り線の左にマスターー、WC、平均マナ
+    }
+      // 垂直の仕切り線の左にマスター、WC、平均マナ
       // 右にカードを2行で表示
-      size: [393, 164],
-      positions: [
-        33, 0, 33, 82, // cards
-        1, 21, 30, // master
-        4, 70, 24, // WC
-        3, 114, 28, // mana
-        30, 164, -90 //grid
-      ]
-    },
-    {
-      // 水平の仕切り線の上にマスターー、WC、平均マナ
+      //
+      // 水平の仕切り線の上にマスター、WC、平均マナ
       // 下にカードを2行で表示
       // (パターン2)
-      size: [384, 216],
-      positions: [
-        12, 52, 12, 134, // cards
-        220, 3, 44, // master
-        276, 6, 39, // WC
-        325, 4, 42, // mana
-        11, 47 //grid
-      ]
-    }
   ];
 
 
@@ -96,7 +78,7 @@ window.addEventListener("load", () => {
         style.height = height + "px";
       }
       this.#ctx = this.#canvas.getContext('2d');
-      this.#ctx.fillStyle = "#101729";
+      this.#ctx.fillStyle = "#272127";
     };
 
     static #drawImage(resolutionRatio, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight) {
@@ -106,28 +88,24 @@ window.addEventListener("load", () => {
       );
     }
 
-    static #drawImageAll(card1X, card1Y, card2X, card2Y, masterX, masterY, masterScale, WCX, WCY, WCScale, manaX, manaY, manaScale, gridX, gridY, gridAngle = 0) {
+    static #drawImageAll(card1X, card1Y, card2X, card2Y, masterX, masterY, masterSize, WCX, WCY, WCSize, gridX, gridY, gridAngle = 0) {
       const resolutionRatio = imageLoader.resolutionRatio;
       this.#ctx.fillRect(0, 0, this.#width, this.#height);
-      this.#drawImage(resolutionRatio, 238, 8, 360, 82, card1X, card1Y, 360, 82);
-      this.#drawImage(resolutionRatio, 594, 8, 360, 82, card2X, card2Y, 360, 82);
-      this.#drawImage(resolutionRatio, 102, 3, 85, 85, masterX, masterY, masterScale, masterScale);
-      this.#drawImage(resolutionRatio, 194, 25, 39, 39, WCX, WCY, WCScale, WCScale);
-      this.#drawImage(resolutionRatio, 955, 19, 52, 52, manaX, manaY, manaScale, manaScale);
+      this.#drawImage(resolutionRatio, 514, 1232, CARD_LINE_SIZE.x, CARD_LINE_SIZE.y, card1X, card1Y, CARD_LINE_SIZE.x, CARD_LINE_SIZE.y);
+      this.#drawImage(resolutionRatio, 1280, 1232, CARD_LINE_SIZE.x, CARD_LINE_SIZE.y, card2X, card2Y, CARD_LINE_SIZE.x, CARD_LINE_SIZE.y);
+      this.#drawImage(resolutionRatio, 258, 1239, 200, 150, masterX, masterY, masterSize / 150 * 200, masterSize);
+      //this.#drawImage(resolutionRatio, 194, 25, 39, 39, WCX, WCY, WCSize, WCSize);
 
       this.#ctx.save();
       this.#ctx.translate(gridX, gridY);
       this.#ctx.rotate(gridAngle * Math.PI / 180);
+      /*
       // 先端
       this.#drawImage(resolutionRatio,
         101, 91, 11, 7,
         0, 0, 11, 7
       );
-      // 仕切り
-      this.#drawImage(resolutionRatio,
-        112, 94, 370, 2,
-        11, 3, 370, 2
-      );
+      */
       this.#ctx.restore();
     };
 
@@ -162,9 +140,9 @@ window.addEventListener("load", () => {
       get image() {
         return imageElement;
       },
-      // 1280pxを基準にした時の横幅(%)
+      // 2560pxを基準にした時の横幅(%)
       get resolutionRatio() {
-        return imageElement.naturalWidth * 10 / 128;
+        return imageElement.naturalWidth * 10 / 256;
       },
       loadImage,
     };
@@ -200,6 +178,7 @@ window.addEventListener("load", () => {
         direct.size = layout.slice(0, 2);
         direct.positions = layout.slice(2);
         localStorage.setItem("direct-layout", JSON.stringify(direct));
+        imageLoader.loadImage();
       }
     }
   })(
