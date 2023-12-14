@@ -131,7 +131,7 @@ window.addEventListener("load", () => {
   }
 
   const imageLoader = (({ imageElement, imageInput }) => {
-    const checkResolutionRatio = (e) => {
+    const checkResolutionRatio = () => {
       if (imageElement.naturalWidth / 16 * 9 !== imageElement.naturalHeight) {
         Warning.log("アスペクト比が厳密な16:9でないため、表示が崩れる可能性があります。 / Because the aspect ratio is not exactly 16:9, There is a possibility the layout is broken.");
       }
