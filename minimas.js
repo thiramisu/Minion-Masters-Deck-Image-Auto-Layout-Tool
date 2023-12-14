@@ -1,4 +1,4 @@
-let DIRECT_RAYOUT;
+let DIRECT_LAYOUT;
 window.addEventListener("load", () => {
   "use strict";
   const LAYOUTS = [
@@ -211,7 +211,7 @@ window.addEventListener("load", () => {
       },
     }
   );
-  DIRECT_RAYOUT = layout.changeLayoutDirectly;
+  DIRECT_LAYOUT = layout.changeLayoutDirectly;
 
   localStorage.removeItem("resolution");
 });
